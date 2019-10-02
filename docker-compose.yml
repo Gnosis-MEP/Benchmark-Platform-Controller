@@ -1,0 +1,8 @@
+version: '2.3'
+services:
+  node:
+    image: redis:5.0.3
+    ports:
+      - "6379:6379"
+
+    mem_limit: 4gb
