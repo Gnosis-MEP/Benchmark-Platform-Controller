@@ -9,6 +9,6 @@ REDIS_ADDRESS = config('REDIS_ADDRESS', default='localhost')
 REDIS_PORT = config('REDIS_PORT', default='6379')
 
 RUN_BENCHMARK_SCRIPT = config(
-    'RUN_BENCHMARK_SCRIPT', default=os.path.join(PROJECT_ROOT, 'tag_image_latest_and_push.sh'))
+    'RUN_BENCHMARK_SCRIPT', default=os.path.join(PROJECT_ROOT, 'execute_benchmark_env.sh'))
 
 LOGGING_LEVEL = config('LOGGING_LEVEL', default='DEBUG')

@@ -3,7 +3,7 @@ services:
   tasks-redis:
     image: redis:5.0.3
     ports:
-      - "6379:6379"
+      - "6379"
   benchmark-platform-controller:
     depends_on:
       - tasks-redis
@@ -26,6 +26,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=0
       - REDIS_ADDRESS=tasks-redis
-      - REDIS_PORT=${REDIS_PORT}
-      - REGISTRY_USER=${REGISTRY_USER}
-      - REGISTRY_PASS=${REGISTRY_PASS}
+      - REDIS_PORT=6379
+      - GITLAB_USER=${GITLAB_USER}
+      - GITLAB_PASS=${GITLAB_PASS}
+      - SLEEP_AFTER_TARGET_STARTUP=1
