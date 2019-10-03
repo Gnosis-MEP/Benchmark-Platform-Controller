@@ -1,15 +1,31 @@
 version: '2.3'
 services:
+  tasks-redis:
+    image: redis:5.0.3
+    ports:
+      - "6379:6379"
   benchmark-platform-controller:
+    depends_on:
+      - tasks-redis
+
     privileged: true
     runtime: nvidia
-    image: benchmark-platform-controller:latest
+    image: registry.insight-centre.org/sit/mps/benchmark-platform-controller:latest
+    command: /service/entrypoint.sh
     build:
       context: '.'
       dockerfile: 'Dockerfile'
+      args:
+        SIT_PYPI_USER_VAR: ${SIT_PYPI_USER}
+        SIT_PYPI_PASS_VAR: ${SIT_PYPI_PASS}
     volumes:
-      - ./:/benchmark-platform-controller
+      - ./Pipfile:/service/Pipfile
       - /var/run/docker.sock:/var/run/docker.sock
-      # args:
-      #   SIT_PYPI_USER_VAR: ${SIT_PYPI_USER}
-      #   SIT_PYPI_PASS_VAR: ${SIT_PYPI_PASS}
+    ports:
+      - "5000:5000"
+    environment:
+      - PYTHONUNBUFFERED=0
+      - REDIS_ADDRESS=tasks-redis
+      - REDIS_PORT=${REDIS_PORT}
+      - REGISTRY_USER=${REGISTRY_USER}
+      - REGISTRY_PASS=${REGISTRY_PASS}
