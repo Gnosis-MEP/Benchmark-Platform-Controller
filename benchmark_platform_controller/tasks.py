@@ -1,10 +1,11 @@
+import time
 import os
 import subprocess
 
 from flask import Flask
 from celery import Celery
 
-from benchmark_platform_controller.conf import REDIS_ADDRESS, REDIS_PORT, PROJECT_ROOT, RUN_BENCHMARK_SCRIPT
+from benchmark_platform_controller.conf import REDIS_ADDRESS, REDIS_PORT, RUN_BENCHMARK_SCRIPT, STOP_BENCHMARK_SCRIPT
 
 
 flask_app = Flask(__name__)
@@ -64,4 +65,15 @@ def execute_benchmark(override_services):
     c = subprocess.call(
         args
     )
+    return c
+
+
+@celery_app.task()
+def stop_benchmark():
+    args = [STOP_BENCHMARK_SCRIPT]
+    print(args)
+    c = subprocess.call(
+        args
+    )
+
     return c
