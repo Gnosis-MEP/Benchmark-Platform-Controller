@@ -1,16 +1,11 @@
 #!/usr/bin/env python
 from flask import Flask, request, jsonify, make_response, abort
 from celery.result import AsyncResult
-# from sqlalchemy import create_engine
-# from sqlalchemy.orm import sessionmaker
 
 from benchmark_platform_controller.tasks import execute_benchmark, stop_benchmark, celery_app
 from benchmark_platform_controller.conf import DATABASE_URL
 from benchmark_platform_controller.models import ExecutionModel, db
-# from benchmark_platform_controller.database_setup import ExecutionModel, engine
 
-# DBSession = sessionmaker(bind=engine)
-# session = DBSession()
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
