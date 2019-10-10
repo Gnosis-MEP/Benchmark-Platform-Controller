@@ -7,4 +7,4 @@ cd ${DATA_DIR}
 ${DIR}/stop_target_system.sh
 ${DIR}/stop_benchmark_system.sh
 cd $DIR
-rm -fr ${DATA_DIR}
+rm -rf ${DATA_DIR}
