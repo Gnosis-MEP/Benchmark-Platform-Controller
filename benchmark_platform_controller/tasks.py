@@ -46,11 +46,6 @@ def make_celery(app):
 celery_app = make_celery(flask_app)
 
 
-@celery_app.task()
-def add_together(a, b):
-    return a + b
-
-
 def _prepare_subprocess_arglist(base_image, base_tag, target_image, target_tag):
     return [RUN_BENCHMARK_SCRIPT, base_image, base_tag, target_image, target_tag]
 

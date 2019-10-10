@@ -18,7 +18,8 @@ class ExecutionModel(db.Model):
     STATUS_FINISHED = 'FINISHED'
     STATUS_CLEANUP = 'CLEANUP'
 
-    id = db.Column(db.String(250), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    result_id = db.Column(db.String(250), nullable=False)
     shutdown_id = db.Column(db.String(250), nullable=True)
     status = db.Column(db.String(250), default=STATUS_RUNNING)
     json_results = db.Column(
@@ -32,4 +33,4 @@ class ExecutionModel(db.Model):
     )
 
     def __repr__(self):
-        return f'<id: {self.id}, shutdown_id:{self.shutdown_id}, json_results: {self.json_results}, status: {self.status}>'
+        return f'<id: {self.id}, result_id:{self.result_id}, shutdown_id:{self.shutdown_id}, json_results: {self.json_results}, status: {self.status}>'

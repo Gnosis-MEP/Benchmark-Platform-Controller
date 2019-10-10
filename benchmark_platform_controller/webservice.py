@@ -17,10 +17,25 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
 
+def is_execution_finished(execution):
+    if not execution:
+        return True
+
+    result = AsyncResult(id=execution.result_id, app=celery_app)
+    result_status = result.status
+    shutdown = None
+    shutdown_status = ''
+    if execution.shutdown_id:
+        shutdown = AsyncResult(id=execution.shutdown_id, app=celery_app)
+        shutdown_status = shutdown.status
+    finished_all_process = all([status == "SUCCESS" for status in [result_status, shutdown_status]])
+    return finished_all_process
+
+
 @app.route('/api/v1.0/get_result/<string:result_id>', methods=['get'])
 def get_result(result_id):
     try:
-        execution = db.session.query(ExecutionModel).filter_by(id=result_id).one()
+        execution = db.session.query(ExecutionModel).filter_by(result_id=result_id).one()
     except Exception as e:
         abort(404)
         # raise e
@@ -44,7 +59,7 @@ def set_result(result_id):
     if not request.json:
         abort(400)
     try:
-        execution = db.session.query(ExecutionModel).filter_by(id=result_id).one()
+        execution = db.session.query(ExecutionModel).filter_by(result_id=result_id).one()
     except:
         abort(404)
     shutdown_id = stop_benchmark.delay()
@@ -57,6 +72,14 @@ def set_result(result_id):
     return make_response(jsonify({'status': 'ok'}), 200)
 
 
+def get_clear_to_go():
+    try:
+        last_execution = db.session.query(ExecutionModel).order_by(ExecutionModel.id.desc()).first()
+    except:
+        return True
+    return is_execution_finished(last_execution)
+
+
 @app.route('/api/v1.0/run_benchmark', methods=['post'])
 def run_benchmark():
     if not request.json:
@@ -65,10 +88,12 @@ def run_benchmark():
     result_id = None
     override_services = request.json.get('override_services')
     if override_services:
+        if not get_clear_to_go():
+            return make_response(jsonify({'wait': 10}), 200)
         result = execute_benchmark.delay(override_services)
         result_id = result.id
 
-        execution = ExecutionModel(id=result_id)
+        execution = ExecutionModel(result_id=result_id)
         db.session.add(execution)
         db.session.commit()
         print(f'inside db: {[e.id for e in db.session.query(ExecutionModel).all()]}')
