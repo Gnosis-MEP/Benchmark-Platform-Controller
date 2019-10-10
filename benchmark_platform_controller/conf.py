@@ -23,6 +23,6 @@ RUN_BENCHMARK_SCRIPT = config(
 STOP_BENCHMARK_SCRIPT = config(
     'STOP_BENCHMARK_SCRIPT', default=os.path.join(SCRIPTS_DIR, 'stop.sh'))
 
-WEBHOOK_BASE_URL = config('WEBHOOK_BASE_URL', default='http://localhost:5000/api/v1.0/set_result/')
+WEBHOOK_BASE_URL = config('WEBHOOK_BASE_URL', default='http://localhost:5000/api/v1.0/set_result')
 
 LOGGING_LEVEL = config('LOGGING_LEVEL', default='DEBUG')

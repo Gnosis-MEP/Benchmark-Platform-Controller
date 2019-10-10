@@ -6,12 +6,13 @@ echo $RESULT_ID
 
 ### prepare local env
 mkdir -p ${DATA_DIR}
+
 cd ${DATA_DIR}
 git clone https://${GITLAB_USER}:${GITLAB_PASS}@gitlab.insight-centre.org/SIT/mps/mps-node.git
 cp mps-node/example.env mps-node/.env
 cp ${DATA_DIR}/${TARGET_COMPOSE_OVERRIDE_FILENAME} mps-node/${TARGET_COMPOSE_OVERRIDE_FILENAME}
 
-git clone git@gitlab.insight-centre.org:SIT/mps/benchmark-tools.git
+git clone https://${GITLAB_USER}:${GITLAB_PASS}@gitlab.insight-centre.org/SIT/mps/benchmark-tools.git
 cp ${DATA_DIR}/${TARGET_SYSTEM_JSON_CONFIG_FILENAME} benchmark-tools/${TARGET_SYSTEM_JSON_CONFIG_FILENAME}
 cp ${DATA_DIR}/${BENCHMARK_JSON_CONFIG_FILENAME} benchmark-tools/${BENCHMARK_JSON_CONFIG_FILENAME}
 
