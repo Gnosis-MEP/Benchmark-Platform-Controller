@@ -5,7 +5,15 @@ import subprocess
 from flask import Flask
 from celery import Celery
 
-from benchmark_platform_controller.conf import REDIS_ADDRESS, REDIS_PORT, RUN_BENCHMARK_SCRIPT, STOP_BENCHMARK_SCRIPT
+from benchmark_platform_controller.compose_conf_gen import create_override_yaml_file
+from benchmark_platform_controller.conf import (
+    REDIS_ADDRESS,
+    REDIS_PORT,
+    RUN_BENCHMARK_SCRIPT,
+    STOP_BENCHMARK_SCRIPT,
+    DATA_DIR,
+    TARGET_COMPOSE_OVERRIDE_FILENAME
+)
 
 
 flask_app = Flask(__name__)
@@ -47,23 +55,27 @@ def _prepare_subprocess_arglist(base_image, base_tag, target_image, target_tag):
 @celery_app.task()
 def execute_benchmark(override_services):
     # repository = 'registry.insight-centre.org/sit/mps/docker-images/'
-    target_image = None
-    target_tag = 'latest'
-    base_image = None
-    base_tag = None
-    for service_name, settings in override_services.items():
-        # non_repository_image_name = settings['image'].split('/')[-1].split(':')[0]
-        base_image, base_tag = settings['image'].split(':')
-        target_image = base_image
-        target_tag = 'latest'
 
-        break
-    print(base_image, base_tag, target_image, target_tag)
+    # target_image = None
+    # target_tag = 'latest'
+    # base_image = None
+    # base_tag = None
+    # for service_name, settings in override_services.items():
+    #     # non_repository_image_name = settings['image'].split('/')[-1].split(':')[0]
+    #     base_image, base_tag = settings['image'].split(':')
+    #     target_image = base_image
+    #     target_tag = 'latest'
 
-    args = _prepare_subprocess_arglist(base_image, base_tag, target_image, target_tag)
-    print(args)
+    #     break
+    # print(base_image, base_tag, target_image, target_tag)
+    # args = _prepare_subprocess_arglist(base_image, base_tag, target_image, target_tag)
+    if not os.path.exists(DATA_DIR):
+        os.makedirs(DATA_DIR)
+
+    fp = create_override_yaml_file(
+        DATA_DIR, TARGET_COMPOSE_OVERRIDE_FILENAME, override_services)
     c = subprocess.call(
-        args
+        [RUN_BENCHMARK_SCRIPT]
     )
     return c
 
