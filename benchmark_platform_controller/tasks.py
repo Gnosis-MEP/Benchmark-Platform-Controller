@@ -5,14 +5,17 @@ import subprocess
 from flask import Flask
 from celery import Celery
 
-from benchmark_platform_controller.compose_conf_gen import create_override_yaml_file
+from benchmark_platform_controller.conf_gen import create_override_yaml_file, create_json_conf_file
 from benchmark_platform_controller.conf import (
     REDIS_ADDRESS,
     REDIS_PORT,
     RUN_BENCHMARK_SCRIPT,
     STOP_BENCHMARK_SCRIPT,
     DATA_DIR,
-    TARGET_COMPOSE_OVERRIDE_FILENAME
+    TARGET_COMPOSE_OVERRIDE_FILENAME,
+    TARGET_SYSTEM_JSON_CONFIG_FILENAME,
+    BENCHMARK_JSON_CONFIG_FILENAME,
+    WEBHOOK_BASE_URL,
 )
 
 
@@ -52,8 +55,8 @@ def _prepare_subprocess_arglist(base_image, base_tag, target_image, target_tag):
     return [RUN_BENCHMARK_SCRIPT, base_image, base_tag, target_image, target_tag]
 
 
-@celery_app.task()
-def execute_benchmark(override_services):
+@celery_app.task(bind=True)
+def execute_benchmark(self, override_services):
     # repository = 'registry.insight-centre.org/sit/mps/docker-images/'
 
     # target_image = None
@@ -72,10 +75,15 @@ def execute_benchmark(override_services):
     if not os.path.exists(DATA_DIR):
         os.makedirs(DATA_DIR)
 
-    fp = create_override_yaml_file(
+
+    compose_fp = create_override_yaml_file(
         DATA_DIR, TARGET_COMPOSE_OVERRIDE_FILENAME, override_services)
+    targe_system_js_confs = create_json_conf_file(DATA_DIR, TARGET_SYSTEM_JSON_CONFIG_FILENAME, {})
+    benchmark_js_confs = create_json_conf_file(DATA_DIR, BENCHMARK_JSON_CONFIG_FILENAME, {})
+
+    execution_id = self.request.id
     c = subprocess.call(
-        [RUN_BENCHMARK_SCRIPT]
+        [RUN_BENCHMARK_SCRIPT, execution_id]
     )
     return c
 

@@ -1,13 +1,6 @@
 import os
+import json
 import yaml
-# document = """
-# version: '2.3'
-# services:
-#   media-server:
-#     image: tiangolo/nginx-rtmp
-# """
-# data = yaml.load(document)
-# print(yaml.dump(data, default_flow_style=False))
 
 
 def generate_yaml_content(override_services):
@@ -26,5 +19,10 @@ def create_override_yaml_file(path, file_name, override_services):
         f.write(file_content)
     return file_path
 
-# {'version': '2.3',
-#  'services': {'media-server': {'image': 'tiangolo/nginx-rtmp'}}}
+
+def create_json_conf_file(path, file_name, data):
+    file_content = json.dumps(data)
+    file_path = os.path.join(path, file_name)
+    with open(file_path, 'w') as f:
+        f.write(file_content)
+    return file_path
