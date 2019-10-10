@@ -22,8 +22,8 @@ def get_result(result_id):
     try:
         execution = db.session.query(ExecutionModel).filter_by(id=result_id).one()
     except Exception as e:
-        # abort(404)
-        raise e
+        abort(404)
+        # raise e
 
     result = AsyncResult(id=result_id, app=celery_app)
     result_status = result.status
@@ -43,9 +43,12 @@ def get_result(result_id):
 def set_result(result_id):
     if not request.json:
         abort(400)
+    try:
+        execution = db.session.query(ExecutionModel).filter_by(id=result_id).one()
+    except:
+        abort(404)
     shutdown_id = stop_benchmark.delay()
     bm_results = request.json
-    execution = db.session.query(ExecutionModel).filter_by(id=result_id).one()
     execution.status = execution.STATUS_CLEANUP
     execution.json_results = bm_results
     execution.shutdown_id = shutdown_id.id

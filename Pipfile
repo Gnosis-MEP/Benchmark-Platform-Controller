@@ -16,6 +16,7 @@ benchmark-platform-controller = {path = ".",editable = true}
 sqlalchemy = "*"
 sqlalchemy-jsonfield = "*"
 flask-sqlalchemy = "*"
+pyyaml = "==3.13"
 
 [requires]
 python_version = "3.6"
