@@ -16,9 +16,9 @@ git clone https://${GITLAB_USER}:${GITLAB_PASS}@gitlab.insight-centre.org/SIT/mp
 cp ${DATA_DIR}/${TARGET_SYSTEM_JSON_CONFIG_FILENAME} benchmark-tools/${TARGET_SYSTEM_JSON_CONFIG_FILENAME}
 cp ${DATA_DIR}/${BENCHMARK_JSON_CONFIG_FILENAME} benchmark-tools/${BENCHMARK_JSON_CONFIG_FILENAME}
 
-echo "TARGET_SYSTEM_JSON_CONFIG_PATH=/tmp/${TARGET_SYSTEM_JSON_CONFIG_FILENAME}" >> benchmark-tools/.env
-echo "BENCHMARK_JSON_CONFIG_PATH=/tmp/${BENCHMARK_JSON_CONFIG_FILENAME}" >> benchmark-tools/.env
 echo "RESULT_WEBHOOK_URL=${WEBHOOK_BASE_URL}/${RESULT_ID}" >> benchmark-tools/.env
+# echo "TARGET_SYSTEM_JSON_CONFIG_PATH=/service/${TARGET_SYSTEM_JSON_CONFIG_FILENAME}" >> benchmark-tools/.env
+# echo "BENCHMARK_JSON_CONFIG_PATH=/service/${BENCHMARK_JSON_CONFIG_FILENAME}" >> benchmark-tools/.env
 
 ### start target system
 ${DIR}/start_target_system.sh
