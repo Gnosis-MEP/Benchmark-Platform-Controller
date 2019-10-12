@@ -6,6 +6,9 @@ from benchmark_platform_controller.tasks import execute_benchmark, stop_benchmar
 from benchmark_platform_controller.conf import DATABASE_URL
 from benchmark_platform_controller.models import ExecutionModel, db
 
+
+WAIT_BEFORE_ASK_TO_RUN_AGAIN = 10
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -84,7 +87,7 @@ def run_benchmark():
     override_services = request.json.get('override_services')
     if override_services:
         if not get_clear_to_go():
-            return make_response(jsonify({'wait': 10}), 200)
+            return make_response(jsonify({'wait': WAIT_BEFORE_ASK_TO_RUN_AGAIN}), 200)
         result = execute_benchmark.delay(override_services)
         result_id = result.id
 
