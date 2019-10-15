@@ -19,7 +19,7 @@ services:
         SIT_PYPI_USER_VAR: ${SIT_PYPI_USER}
         SIT_PYPI_PASS_VAR: ${SIT_PYPI_PASS}
     volumes:
-      - ./Pipfile:/service/Pipfile
+      # - ./:/service/
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - "5000:5000"

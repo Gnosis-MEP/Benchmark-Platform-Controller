@@ -50,6 +50,49 @@ def _prepare_subprocess_arglist(base_image, base_tag, target_image, target_tag):
     return [RUN_BENCHMARK_SCRIPT, base_image, base_tag, target_image, target_tag]
 
 
+def default_benchmark_confs():
+    return {
+        "benchmark": {
+            "tasks": [
+                {
+                    "module": "benchmark_tools.task_generator.task_add_queries",
+                    "args": [],
+                    "kwargs": {
+                        "redis_address": "172.17.0.1",
+                        "redis_port": "6379",
+                        "input_cmd_stream_key": "qm-cmd",
+                        "logging_level": "DEBUG"
+                    },
+                    "actions": [
+                        {
+                            "action": "addQuery",
+                            "query": "select object_detection from publisher 1 where (object.label = 'car') within TIMEFRAMEWINDOW(10) withconfidence >50 ",
+                            "subscriber_id": "3",
+                            "query_id": "1"
+                        },
+                        {
+                            "action": "task_gen_wait_for",
+                            "sleep_time": "20"
+                        },
+                        {
+                            "action": "delQuery",
+                            "subscriber_id": "3",
+                            "query_id": "1"
+                        },
+                        {
+                            "action": "task_gen_wait_for",
+                            "sleep_time": "3"
+                        }
+                    ]
+                }
+            ]
+        },
+        "target_system": {
+        },
+        "result_webhook": f"{WEBHOOK_BASE_URL}/"
+    }
+
+
 @celery_app.task(bind=True)
 def execute_benchmark(self, override_services):
     # repository = 'registry.insight-centre.org/sit/mps/docker-images/'
@@ -69,14 +112,18 @@ def execute_benchmark(self, override_services):
     # args = _prepare_subprocess_arglist(base_image, base_tag, target_image, target_tag)
     if not os.path.exists(DATA_DIR):
         os.makedirs(DATA_DIR)
+    execution_id = self.request.id
 
 
     compose_fp = create_override_yaml_file(
         DATA_DIR, TARGET_COMPOSE_OVERRIDE_FILENAME, override_services)
     targe_system_js_confs = create_json_conf_file(DATA_DIR, TARGET_SYSTEM_JSON_CONFIG_FILENAME, {})
-    benchmark_js_confs = create_json_conf_file(DATA_DIR, BENCHMARK_JSON_CONFIG_FILENAME, {})
 
-    execution_id = self.request.id
+    benchmark_confs = default_benchmark_confs()
+    benchmark_confs['result_webhook'] += str(execution_id)
+
+    benchmark_js_confs = create_json_conf_file(DATA_DIR, BENCHMARK_JSON_CONFIG_FILENAME, benchmark_confs)
+
     c = subprocess.call(
         [RUN_BENCHMARK_SCRIPT, execution_id]
     )
