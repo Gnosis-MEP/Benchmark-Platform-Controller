@@ -19,7 +19,7 @@ services:
         SIT_PYPI_USER_VAR: ${SIT_PYPI_USER}
         SIT_PYPI_PASS_VAR: ${SIT_PYPI_PASS}
     volumes:
-      # - ./:/service/
+      - ./configs.json:/service/configs.json
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - "5000:5000"
@@ -34,6 +34,7 @@ services:
       - SLEEP_AFTER_BENCHMARK_STARTUP=${SLEEP_AFTER_BENCHMARK_STARTUP}
       - TARGET_SYSTEM_JSON_CONFIG_FILENAME=${TARGET_SYSTEM_JSON_CONFIG_FILENAME}
       - BENCHMARK_JSON_CONFIG_FILENAME=${BENCHMARK_JSON_CONFIG_FILENAME}
+      - DEFAULT_BENCHMARK_JSON_FILE=/service/configs.json
       - WEBHOOK_BASE_URL=${WEBHOOK_BASE_URL}
       - DATA_DIR=/service/tmp
       - DATABASE_URL=${DATABASE_URL}

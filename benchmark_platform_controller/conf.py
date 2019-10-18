@@ -10,7 +10,9 @@ DATA_DIR = config('DATA_DIR', default='/tmp/data')
 TARGET_COMPOSE_OVERRIDE_FILENAME = config('TARGET_COMPOSE_OVERRIDE_FILENAME', default='docker-compose-override.yml')
 
 TARGET_SYSTEM_JSON_CONFIG_FILENAME = config('TARGET_SYSTEM_JSON_CONFIG_FILENAME', default='ts.json')
-BENCHMARK_JSON_CONFIG_FILENAME = config('BENCHMARK_JSON_CONFIG_FILENAME', default='bm.json')
+BENCHMARK_JSON_CONFIG_FILENAME = config('BENCHMARK_JSON_CONFIG_FILENAME', default='configs.json')
+
+DEFAULT_BENCHMARK_JSON_FILE = config('DEFAULT_BENCHMARK_JSON_FILE', default='configs.json')
 
 REDIS_ADDRESS = config('REDIS_ADDRESS', default='localhost')
 REDIS_PORT = config('REDIS_PORT', default='6379')

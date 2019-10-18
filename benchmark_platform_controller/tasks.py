@@ -1,4 +1,4 @@
-import time
+import json
 import os
 import subprocess
 
@@ -16,6 +16,7 @@ from benchmark_platform_controller.conf import (
     TARGET_SYSTEM_JSON_CONFIG_FILENAME,
     BENCHMARK_JSON_CONFIG_FILENAME,
     WEBHOOK_BASE_URL,
+    DEFAULT_BENCHMARK_JSON_FILE
 )
 
 
@@ -51,46 +52,51 @@ def _prepare_subprocess_arglist(base_image, base_tag, target_image, target_tag):
 
 
 def default_benchmark_confs():
-    return {
-        "benchmark": {
-            "tasks": [
-                {
-                    "module": "benchmark_tools.task_generator.task_add_queries",
-                    "args": [],
-                    "kwargs": {
-                        "redis_address": "172.17.0.1",
-                        "redis_port": "6379",
-                        "input_cmd_stream_key": "qm-cmd",
-                        "logging_level": "DEBUG"
-                    },
-                    "actions": [
-                        {
-                            "action": "addQuery",
-                            "query": "select object_detection from publisher 1 where (object.label = 'car') within TIMEFRAMEWINDOW(10) withconfidence >50 ",
-                            "subscriber_id": "3",
-                            "query_id": "1"
-                        },
-                        {
-                            "action": "task_gen_wait_for",
-                            "sleep_time": "20"
-                        },
-                        {
-                            "action": "delQuery",
-                            "subscriber_id": "3",
-                            "query_id": "1"
-                        },
-                        {
-                            "action": "task_gen_wait_for",
-                            "sleep_time": "3"
-                        }
-                    ]
-                }
-            ]
-        },
-        "target_system": {
-        },
-        "result_webhook": f"{WEBHOOK_BASE_URL}/"
-    }
+    configs = {}
+
+    with open(DEFAULT_BENCHMARK_JSON_FILE, 'r') as f:
+        configs = json.load(f)
+    return configs
+    # return {
+    #     "benchmark": {
+    #         "tasks": [
+    #             {
+    #                 "module": "benchmark_tools.task_generator.task_add_queries",
+    #                 "args": [],
+    #                 "kwargs": {
+    #                     "redis_address": "172.17.0.1",
+    #                     "redis_port": "6379",
+    #                     "input_cmd_stream_key": "qm-cmd",
+    #                     "logging_level": "DEBUG"
+    #                 },
+    #                 "actions": [
+    #                     {
+    #                         "action": "addQuery",
+    #                         "query": "select object_detection from publisher 1 where (object.label = 'car') within TIMEFRAMEWINDOW(10) withconfidence >50 ",
+    #                         "subscriber_id": "3",
+    #                         "query_id": "1"
+    #                     },
+    #                     {
+    #                         "action": "task_gen_wait_for",
+    #                         "sleep_time": "20"
+    #                     },
+    #                     {
+    #                         "action": "delQuery",
+    #                         "subscriber_id": "3",
+    #                         "query_id": "1"
+    #                     },
+    #                     {
+    #                         "action": "task_gen_wait_for",
+    #                         "sleep_time": "3"
+    #                     }
+    #                 ]
+    #             }
+    #         ]
+    #     },
+    #     "target_system": {
+    #     },
+    #     "result_webhook": f"{WEBHOOK_BASE_URL}/"
+    # }
 
 
 @celery_app.task(bind=True)
@@ -120,7 +126,7 @@ def execute_benchmark(self, override_services):
     targe_system_js_confs = create_json_conf_file(DATA_DIR, TARGET_SYSTEM_JSON_CONFIG_FILENAME, {})
 
     benchmark_confs = default_benchmark_confs()
-    benchmark_confs['result_webhook'] += str(execution_id)
+    benchmark_confs['result_webhook'] = f"{WEBHOOK_BASE_URL}/" + str(execution_id)
 
     benchmark_js_confs = create_json_conf_file(DATA_DIR, BENCHMARK_JSON_CONFIG_FILENAME, benchmark_confs)
 

@@ -5,7 +5,6 @@ from celery.result import AsyncResult
 from benchmark_platform_controller.tasks import execute_benchmark, stop_benchmark, celery_app
 from benchmark_platform_controller.conf import DATABASE_URL
 from benchmark_platform_controller.models import ExecutionModel, db
-from benchmark_platform_controller.evaluation import evaluate_result
 
 WAIT_BEFORE_ASK_TO_RUN_AGAIN = 10
 
@@ -62,9 +61,8 @@ def set_result(result_id):
         abort(404)
     shutdown_id = stop_benchmark.delay()
     bm_results = request.json
-    eval_results = evaluate_result(result_id, bm_results)
     execution.status = execution.STATUS_CLEANUP
-    execution.json_results = eval_results
+    execution.json_results = bm_results
     execution.shutdown_id = shutdown_id.id
     db.session.commit()
 
