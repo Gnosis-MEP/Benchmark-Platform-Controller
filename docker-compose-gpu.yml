@@ -1,0 +1,6 @@
+version: '2.3'
+services:
+  benchmark-platform-controller:
+    runtime: nvidia
+    environment:
+      - USE_GPU=1
