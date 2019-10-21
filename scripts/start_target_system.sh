@@ -3,6 +3,7 @@ DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if [ "$USE_GPU" == "1" ]
 then
+    echo "USING GPU!"
     COMPOSE_SCRIPT=compose-all.sh
 else
     COMPOSE_SCRIPT=compose-media.sh
