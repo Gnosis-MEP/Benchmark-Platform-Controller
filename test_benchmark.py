@@ -44,9 +44,9 @@ def check_results(base_url, result_id):
             return check_results(base_url, result_id)
 
 
-def run(base_url, service_name, image_name):
+def run(base_url, service_name, image_name, tag):
     run_benchmark_url = build_url(base_url, RUN_BENCHMARK_ENDPOINT)
-    tag_to_use = 'dev'
+    tag_to_use = tag
     params = {
         "override_services": {
             service_name: {
@@ -63,7 +63,7 @@ def run(base_url, service_name, image_name):
             wait_time = int(data['wait'])
             print(f'Service is busy, waiting for {wait_time} seconds before next try...')
             time.sleep(wait_time)
-            return run(run_benchmark_url, service_name, image_name)
+            return run(run_benchmark_url, service_name, image_name, tag)
         else:
             result_id = data['result_id']
             print(f'Waiting {RECHECK_RESULT_TIME} seconds before checking results...')
@@ -89,6 +89,7 @@ if __name__ == '__main__':
     benchmark_platform_controller_url = sys.argv[1]
     service_name = sys.argv[2]
     image_name = sys.argv[3]
-    result = run(benchmark_platform_controller_url, service_name, image_name)
+    tag = sys.argv[4]
+    result = run(benchmark_platform_controller_url, service_name, image_name, tag)
     print(result)
     exit(0)
