@@ -47,6 +47,7 @@ def check_results(base_url, result_id):
 def run(base_url, service_name, image_name, tag):
     run_benchmark_url = build_url(base_url, RUN_BENCHMARK_ENDPOINT)
     tag_to_use = tag
+
     params = {
         "override_services": {
             service_name: {
@@ -54,6 +55,25 @@ def run(base_url, service_name, image_name, tag):
             }
         }
     }
+    # params = {
+    #     "override_services": {
+    #         'object-detection': {
+    #             'image': f'registry.insight-centre.org/sit/mps/content-extraction-service:{tag_to_use}'
+    #         },
+    #         'forwarder': {
+    #             'image': f'registry.insight-centre.org/sit/mps/forwarder:{tag_to_use}'
+    #         },
+    #         'matcher': {
+    #             'image': f'registry.insight-centre.org/sit/mps/matcher:{tag_to_use}'
+    #         },
+    #         'event-dispatcher': {
+    #             'image': f'registry.insight-centre.org/sit/mps/event-dispatcher:{tag_to_use}'
+    #         },
+    #         'preprocessor': {
+    #             'image': f'registry.insight-centre.org/sit/mps/preprocessing-service:{tag_to_use}'
+    #         },
+    #     }
+    # }
     print(f'Sending requests for benchmark on url "{run_benchmark_url}" with params: {params}')
     res = make_request_post(run_benchmark_url, params)
     if res.status == 200:
