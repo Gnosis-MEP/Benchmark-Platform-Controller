@@ -83,7 +83,7 @@ def run(base_url, service_name, image_name, tag):
             wait_time = int(data['wait'])
             print(f'Service is busy, waiting for {wait_time} seconds before next try...')
             time.sleep(wait_time)
-            return run(run_benchmark_url, service_name, image_name, tag)
+            return run(base_url, service_name, image_name, tag)
         else:
             result_id = data['result_id']
             print(f'Waiting {RECHECK_RESULT_TIME} seconds before checking results...')
