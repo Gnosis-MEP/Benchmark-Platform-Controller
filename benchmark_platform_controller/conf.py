@@ -25,6 +25,12 @@ RUN_BENCHMARK_SCRIPT = config(
 STOP_BENCHMARK_SCRIPT = config(
     'STOP_BENCHMARK_SCRIPT', default=os.path.join(SCRIPTS_DIR, 'stop.sh'))
 
+TIMEOUT_SCRIPT = config(
+    'TIMEOUT_SCRIPT', default=os.path.join(SCRIPTS_DIR, 'timeout.py'))
+
+
 WEBHOOK_BASE_URL = config('WEBHOOK_BASE_URL', default='http://localhost:5000/api/v1.0/set_result')
+
+EXECUTION_TIMEOUT = config('EXECUTION_TIMEOUT', default=60)
 
 LOGGING_LEVEL = config('LOGGING_LEVEL', default='DEBUG')

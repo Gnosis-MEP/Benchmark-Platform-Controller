@@ -18,6 +18,7 @@ services:
         SIT_PYPI_USER_VAR: ${SIT_PYPI_USER}
         SIT_PYPI_PASS_VAR: ${SIT_PYPI_PASS}
     volumes:
+      # - ./:/service
       - ./configs.json:/service/configs.json
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
@@ -37,3 +38,4 @@ services:
       - WEBHOOK_BASE_URL=${WEBHOOK_BASE_URL}
       - DATA_DIR=/service/tmp
       - DATABASE_URL=${DATABASE_URL}
+      - EXECUTION_TIMEOUT=${EXECUTION_TIMEOUT}
