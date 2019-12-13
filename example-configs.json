@@ -12,7 +12,7 @@
                         "actions": [
                             {
                                 "action": "addQuery",
-                                "query": "select object_detection from publisher 1 where (object.label = 'car') within TIMEFRAMEWINDOW(10) withconfidence >50 ",
+                                "query": "select object_detection from publisher 1 where (object1.label = car) within TUMBLING_COUNT_WINDOW(4) withconfidence >50 ",
                                 "subscriber_id": "3",
                                 "query_id": "1"
                             },
