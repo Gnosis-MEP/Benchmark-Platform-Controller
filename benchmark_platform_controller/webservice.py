@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from flask import Flask, request, jsonify, make_response, abort
+from flask import Flask, request, jsonify, make_response, abort, url_for, render_template
 from celery.result import AsyncResult
 
 from benchmark_platform_controller.tasks import execute_benchmark, stop_benchmark, celery_app
@@ -10,7 +10,6 @@ WAIT_BEFORE_ASK_TO_RUN_AGAIN = 10
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
-print(DATABASE_URL)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
@@ -97,6 +96,19 @@ def run_benchmark():
         print(f'inside db: {[e.id for e in db.session.query(ExecutionModel).all()]}')
 
     return make_response(jsonify({'result_id': result_id}), 200)
+
+
+@app.route('/', methods=['get'])
+def list_executions():
+    try:
+        bm_results = db.session.query(ExecutionModel).order_by(ExecutionModel.id.desc())
+        bm_results_with_urls = []
+        for result in bm_results:
+            bm_results_with_urls.append(url_for('get_result', result_id=result.result_id))
+        bm_results = bm_results_with_urls
+    except:
+        bm_results = []
+    return render_template('list_benchmarks.html', bm_results=bm_results)
 
 
 def database_is_empty():
