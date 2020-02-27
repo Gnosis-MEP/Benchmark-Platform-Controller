@@ -10,6 +10,7 @@ WAIT_BEFORE_ASK_TO_RUN_AGAIN = 10
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+print(DATABASE_URL)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
@@ -98,9 +99,17 @@ def run_benchmark():
     return make_response(jsonify({'result_id': result_id}), 200)
 
 
+def database_is_empty():
+    table_names = db.inspect(db.engine).get_table_names()
+    is_empty = table_names == []
+    print('Db is empty: {}'.format(is_empty))
+    return is_empty
+
+
 if __name__ == '__main__':
     # with app.app_context():
     app.app_context().push()
-    db.drop_all()
-    db.create_all()
+    if database_is_empty():
+        db.drop_all()
+        db.create_all()
     app.run(host='0.0.0.0', port=5000, debug=True)
