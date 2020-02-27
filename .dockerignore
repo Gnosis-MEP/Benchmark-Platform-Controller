@@ -2,3 +2,4 @@ dist/*
 *.egg-info/*
 .env
 Dockerfile
+benchmark_platform_controller/*.db
