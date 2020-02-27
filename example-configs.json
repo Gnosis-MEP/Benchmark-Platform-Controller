@@ -70,8 +70,8 @@
                 "kwargs":{
                     "jaeger_api_host": "http://172.17.0.1:16686",
                     "threshold_functions": {
-                        "latency_avg": "lambda x: x < (0.5 * 1.1)",
-                        "latency_std": "lambda x: x < (0.5 * 1.1)"
+                        "latency_avg": "lambda x: x < (3 * 1.1)",
+                        "latency_std": "lambda x: x < (3 * 1.1)"
                     },
                     "logging_level": "DEBUG"
                 }

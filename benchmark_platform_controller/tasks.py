@@ -82,7 +82,7 @@ def execute_benchmark(self, override_services):
     c = subprocess.call(
         [RUN_BENCHMARK_SCRIPT, execution_id]
     )
-    timeout_proc = subprocess.call([TIMEOUT_SCRIPT, get_result_url, set_result_url, str(EXECUTION_TIMEOUT)])
+    # timeout_proc = subprocess.call([TIMEOUT_SCRIPT, get_result_url, set_result_url, str(EXECUTION_TIMEOUT)])
     return c
 
 

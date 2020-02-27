@@ -57,7 +57,7 @@ def timeout(get_result_webhook_url, set_result_webhook_url, execution_timeout):
         print(f'Timeout Status: {i+1}/{execution_timeout} seconds')
 
     print(f'TIMEOUT REACHED! FORCING FINISHE RESULT BY TIMEOUT LIMIT')
-    force_result_by_timeout(set_result_webhook_url, execution_timeout)
+    # force_result_by_timeout(set_result_webhook_url, execution_timeout)
 
 
 if __name__ == '__main__':
