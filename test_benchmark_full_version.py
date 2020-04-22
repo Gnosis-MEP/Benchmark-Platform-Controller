@@ -92,6 +92,9 @@ def run(base_url, tag, start_time):
         'preprocessor',
         'object-detection',
         'color-detection'
+
+        'scheduler',
+        'adaptation-planner'
     ]
 
     # other services have different service names and repository names
@@ -106,6 +109,9 @@ def run(base_url, tag, start_time):
             repository_name = special_services_name_map[service]
         else:
             repository_name = service
+
+        if repository_name in ['event-dispatcher', 'scheduler', 'adaptation-planner']:
+            tag_to_use = 'adaptive-scheduler-mocked'
 
         params['override_services'][service] = {
             'image': f'registry.insight-centre.org/sit/mps/{repository_name}:{tag_to_use}'
