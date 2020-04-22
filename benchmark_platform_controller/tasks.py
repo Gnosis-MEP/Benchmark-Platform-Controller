@@ -60,28 +60,30 @@ def default_benchmark_confs():
         configs = json.load(f)
     return configs
 
+
 @celery_app.task(bind=True)
-def execute_benchmark(self, override_services):
+def execute_benchmark(self, execution_configurations):
     if not os.path.exists(DATA_DIR):
         os.makedirs(DATA_DIR)
     execution_id = self.request.id
+    override_services = execution_configurations.get('override_services', {})
 
-
+    target_system_confs = execution_configurations.get('target_system', {})
     compose_fp = create_override_yaml_file(
         DATA_DIR, TARGET_COMPOSE_OVERRIDE_FILENAME, override_services)
-    targe_system_js_confs = create_json_conf_file(DATA_DIR, TARGET_SYSTEM_JSON_CONFIG_FILENAME, {})
+    targe_system_js_confs = create_json_conf_file(DATA_DIR, TARGET_SYSTEM_JSON_CONFIG_FILENAME, target_system_confs)
 
     benchmark_confs = default_benchmark_confs()
     set_result_url = f"{WEBHOOK_BASE_URL}/" + str(execution_id)
     benchmark_confs['result_webhook'] = set_result_url
-
-    get_result_url = set_result_url.replace('set_result', 'get_result')
 
     benchmark_js_confs = create_json_conf_file(DATA_DIR, BENCHMARK_JSON_CONFIG_FILENAME, benchmark_confs)
 
     c = subprocess.call(
         [RUN_BENCHMARK_SCRIPT, execution_id]
     )
+
+    # get_result_url = set_result_url.replace('set_result', 'get_result')
     # timeout_proc = subprocess.call([TIMEOUT_SCRIPT, get_result_url, set_result_url, str(EXECUTION_TIMEOUT)])
     return c
 

@@ -83,17 +83,20 @@ def run_benchmark():
         abort(400)
 
     result_id = None
-    override_services = request.json.get('override_services')
-    if override_services:
-        if not get_clear_to_go():
-            return make_response(jsonify({'wait': WAIT_BEFORE_ASK_TO_RUN_AGAIN}), 200)
-        result = execute_benchmark.delay(override_services)
-        result_id = result.id
+    execution_configurations = request.json
 
-        execution = ExecutionModel(result_id=result_id)
-        db.session.add(execution)
-        db.session.commit()
-        print(f'inside db: {[e.id for e in db.session.query(ExecutionModel).all()]}')
+    # override_services = request.json.get('override_services')
+    # target_system_configs = request.json
+    if not get_clear_to_go():
+        return make_response(jsonify({'wait': WAIT_BEFORE_ASK_TO_RUN_AGAIN}), 200)
+
+    result = execute_benchmark.delay(execution_configurations)
+    result_id = result.id
+
+    execution = ExecutionModel(result_id=result_id)
+    db.session.add(execution)
+    db.session.commit()
+    print(f'inside db: {[e.id for e in db.session.query(ExecutionModel).all()]}')
 
     return make_response(jsonify({'result_id': result_id}), 200)
 
