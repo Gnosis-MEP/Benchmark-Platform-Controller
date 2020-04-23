@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from flask import Flask, request, jsonify, make_response, abort, url_for, render_template
 from celery.result import AsyncResult
+from sqlalchemy_utils import database_exists, create_database
 
 from benchmark_platform_controller.tasks import execute_benchmark, stop_benchmark, celery_app
 from benchmark_platform_controller.conf import DATABASE_URL
@@ -115,6 +116,8 @@ def list_executions():
 
 
 def database_is_empty():
+    if not database_exists(db.engine.url):
+        create_database(db.engine.url)
     table_names = db.inspect(db.engine).get_table_names()
     is_empty = table_names == []
     print('Db is empty: {}'.format(is_empty))
