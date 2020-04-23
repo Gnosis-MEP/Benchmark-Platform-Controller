@@ -1,5 +1,6 @@
 stages:
   - build
+  - tag-latest
 
 variables:
   LOGGING_LEVEL: DEBUG
