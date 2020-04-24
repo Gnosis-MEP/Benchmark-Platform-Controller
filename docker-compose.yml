@@ -17,6 +17,7 @@ services:
   benchmark-platform-controller:
     depends_on:
       - tasks-redis
+      - db
 
     privileged: true
     image: registry.insight-centre.org/sit/mps/benchmark-platform-controller:latest
