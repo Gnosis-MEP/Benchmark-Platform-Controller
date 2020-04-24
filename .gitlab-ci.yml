@@ -29,3 +29,4 @@ Tag Latest:
     - cd $CI_PROJECT_DIR
     - echo "FROM ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}" > Dockerfile
     - /kaniko/executor --skip-tls-verify --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY_IMAGE:latest
+  when: manual
