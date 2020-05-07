@@ -8,8 +8,11 @@ There are a few requirements necessary for running this system:
 * docker
 * docker-compose
 * **nvidia-docker**\*
+* Postgres OS Libs\*\*
 
 **Nvidia-docker\***: Required only if using GPU. And if using the latest version of nvidia-docker, it's also necessary to install `nvidia-container-runtime` and configure `/etc/docker/daemon.json` with the `nvidia` runtime ([reference](https://github.com/NVIDIA/nvidia-docker/blob/16345fb10e8b0c7285375641ef6ee12063af584c/daemon.json)), this is necessary to maintain backward compatbility and compatiblity issues with docker-compose.
+
+Postgres OS Libs \*\*: Only necessary if installing locally for development instead of using the docker image. Eg of library (ubuntu): `libpq-dev`
 
 # Docker Images Access
 It's necessary to login into our gitlab container registry in order to have access to the docker images.

@@ -60,6 +60,10 @@ def set_result(result_id):
         execution = db.session.query(ExecutionModel).filter_by(result_id=result_id).one()
     except:
         abort(404)
+
+    if execution.status == execution.STATUS_FINISHED:
+        abort(400)
+
     shutdown_id = stop_benchmark.delay()
     bm_results = request.json
     execution.status = execution.STATUS_CLEANUP
@@ -72,10 +76,20 @@ def set_result(result_id):
 
 def get_clear_to_go():
     try:
+        print('last execution:')
         last_execution = db.session.query(ExecutionModel).order_by(ExecutionModel.id.desc()).first()
     except:
+        print('Exception return true')
         return True
-    return is_execution_finished(last_execution)
+    if last_execution is None:
+        return True
+    execution_finished = is_execution_finished(last_execution)
+    is_clear = execution_finished or last_execution.status == last_execution.STATUS_FINISHED
+
+    if execution_finished and last_execution.status != last_execution.STATUS_FINISHED:
+        last_execution.status = last_execution.STATUS_FINISHED
+        db.session.commit()
+    return is_clear
 
 
 @app.route('/api/v1.0/run_benchmark', methods=['post'])
