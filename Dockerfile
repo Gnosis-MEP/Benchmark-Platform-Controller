@@ -1,5 +1,7 @@
 FROM registry.insight-centre.org/sit/mps/docker-images/base-services:latest
 
+RUN apt-get -q update && apt-get -qy install netcat && rm -rf /var/lib/apt/lists/*
+
 RUN curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh && \
     pip install docker-compose && \
     rm -rf /tmp/pip* /root/.cache
