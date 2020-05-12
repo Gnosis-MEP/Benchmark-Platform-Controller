@@ -132,6 +132,10 @@ After the result is set, the Benchmark Platform Controller will start the proces
 ```
 The payload is a `json`, and it's content represent the benchmark result.
 
+Example of invoking the endpoint on the Benchmark Server using wget: 
+```shell
+wget -O- --post-data='{"some": "results"}' --header='Content-Type:application/json' 'http://10.2.16.176:5000/api/v1.0/set_result/749320ef-a52d-4131-8c62-aa09497eb904'
+```
 
 **PS**: Again, you don't want to use this endpoint, only the benchmark system (Benchmark Tools) should use this endpoint to push the results back to the platform controller.
 
