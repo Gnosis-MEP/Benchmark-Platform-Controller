@@ -23,10 +23,6 @@
                                   "resolution":"640x480",
                                   "color_channels":""
                                }
-                            },
-                            {
-                                "action": "task_gen_wait_for",
-                                "sleep_time": "5"
                             }
                         ]
                     }
