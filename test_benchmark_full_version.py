@@ -77,7 +77,6 @@ def check_results(base_url, result_id, start_time):
 
 def run(base_url, tag, start_time):
     run_benchmark_url = build_url(base_url, RUN_BENCHMARK_ENDPOINT)
-    tag_to_use = tag
     params = {'override_services': {}}
     service_names = [
         'client-manager',
@@ -91,8 +90,7 @@ def run(base_url, tag, start_time):
         'forwarder',
         'preprocessor',
         'object-detection',
-        'color-detection'
-
+        'color-detection',
         'scheduler',
         'adaptation-planner'
     ]
@@ -112,6 +110,8 @@ def run(base_url, tag, start_time):
 
         if repository_name in ['event-dispatcher', 'scheduler', 'adaptation-planner']:
             tag_to_use = 'adaptive-scheduler-mocked'
+        else:
+            tag_to_use = tag
 
         params['override_services'][service] = {
             'image': f'registry.insight-centre.org/sit/mps/{repository_name}:{tag_to_use}'
