@@ -77,45 +77,7 @@ def check_results(base_url, result_id, start_time):
 
 def run(base_url, tag, start_time):
     run_benchmark_url = build_url(base_url, RUN_BENCHMARK_ENDPOINT)
-    params = {'override_services': {}}
-    service_names = [
-        'client-manager',
-        'window-manager',
-        'query-manager',
-        'publisher',
-        'namespace-mapper',
-        'query-planner',
-        'event-dispatcher',
-        'matcher',
-        'forwarder',
-        'preprocessor',
-        'object-detection',
-        'color-detection',
-        'scheduler',
-        'adaptation-planner'
-    ]
-
-    # other services have different service names and repository names
-    special_services_name_map = {
-        'preprocessor': 'preprocessing-service',
-        'object-detection': 'content-extraction-service',
-        'color-detection': 'color-detection-service',
-    }
-
-    for service in service_names:
-        if service in special_services_name_map.keys():
-            repository_name = special_services_name_map[service]
-        else:
-            repository_name = service
-
-        if repository_name in ['event-dispatcher', 'scheduler', 'adaptation-planner']:
-            tag_to_use = 'adaptive-scheduler-mocked'
-        else:
-            tag_to_use = tag
-
-        params['override_services'][service] = {
-            'image': f'registry.insight-centre.org/sit/mps/{repository_name}:{tag_to_use}'
-        }
+    params = {'override_services': {}, 'target_system': {'version': tag}}
     print(f'Sending requests for benchmark on url "{run_benchmark_url}" with params: {params}')
     res = make_request_post(run_benchmark_url, params)
     if res.status == 200:

@@ -77,10 +77,17 @@ Example of payload:
             "image": "registry.insight-centre.org/sit/mps/forwarder:other-tag",
             "cpus": "2.5"
         }
+    },
+    "target_system":{
+        "version": "1.0.0"
     }
 }
 ```
-In this example, the system would start up the latest version of master branch of the target system (MPS Node project), but replacing the Namespace-Mapper tag with the `some-tag`. And also replacing the Forwarder docker image tag with `other-tag`, as well as changing the docker `cpus` configuration for 2.5.
+In this example, the system would start up the target system (MPS Node project) using the version "1.0.0" as a basis, but replacing the Namespace-Mapper tag with the `some-tag`. And also replacing the Forwarder docker image tag with `other-tag`, as well as changing the docker `cpus` configuration for 2.5.
+
+If `target_system` is empty it will use the latest version from the master branch of the target system.
+
+If `override_services` is empty, it will use the specified version as it is.
 
 ### Response
 Sending this request should give back two possible responses:
@@ -132,7 +139,7 @@ After the result is set, the Benchmark Platform Controller will start the proces
 ```
 The payload is a `json`, and it's content represent the benchmark result.
 
-Example of invoking the endpoint on the Benchmark Server using wget: 
+Example of invoking the endpoint on the Benchmark Server using wget:
 ```shell
 wget -O- --post-data='{"some": "results"}' --header='Content-Type:application/json' 'http://10.2.16.176:5000/api/v1.0/set_result/749320ef-a52d-4131-8c62-aa09497eb904'
 ```
