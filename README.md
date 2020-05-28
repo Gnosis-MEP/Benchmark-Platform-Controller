@@ -89,6 +89,51 @@ If `target_system` is empty it will use the latest version from the master branc
 
 If `override_services` is empty, it will use the specified version as it is.
 
+### More examples of payload
+
+#### Running bleeding edge version of mps (aka: branch master)
+```json
+{
+    "override_services": {}
+}
+```
+
+#### Using many configurations override for a service
+```json
+{
+    "override_services": {
+        "object-detection": {
+            "image": "registry.insight-centre.org/sit/mps/content-extraction-service:game-demo",
+            "mem_limit": "800mb",
+            "environment": [
+                "DNN_WEIGHTS_PATH=/content-extractor/content_extraction_service/dnn_model/yolo_coco_v3/yolo.h5"
+            ]
+        }
+    }
+}
+```
+
+#### Adding new services ontop of specific version
+```json
+{
+    "override_services": {
+        "new-service": {
+            "image": "registry.insight-centre.org/sit/mps/my-new-service:some-tag",
+            "mem_limit": "800mb",
+            "environment": [
+                "PYTHONUNBUFFERED=0",
+                "SERVICE_STREAM_KEY=whatever-data",
+                "SERVICE_CMD_KEY=whatever-cmd",
+                "LOGGING_LEVEL=DEBUG"
+            ]
+        }
+    },
+    "target_system":{
+        "version": "v1.1.0"
+    }
+}
+```
+
 ### Response
 Sending this request should give back two possible responses:
 
