@@ -49,6 +49,10 @@ The **result_webhook** variable is currently overrided for each benchmark execut
 More information on how to write this file should be read on the Benchmark Tools docs.
 
 # Runnig with Docker
+First pull all the images:
+`docker-compose pull`
+Then, start the containers:
+
 If you want GPU enabled, execute the following command:
 ```shell
 docker-compose -f docker-compose.yml -f docker-compose-gpu.yml up -d
