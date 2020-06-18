@@ -79,6 +79,7 @@ To install from the `requirements.txt` file, run the following command:
 $ pip install --extra-index-url https://${SIT_PYPI_USER}:${SIT_PYPI_PASS}@sit-pypi.herokuapp.com/simple -r requirements.txt
 ```
 ## Running locally
+Have Postgres and redis running: `docker-compose up -d db tasks-redis` then.
 Execute both `run_webservice.sh` and `run_worker.sh`.
 
 
