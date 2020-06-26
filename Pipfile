@@ -19,6 +19,8 @@ flask-sqlalchemy = "*"
 pyyaml = "==3.13"
 psycopg2 = "==2.8.5"
 sqlalchemy-utils = "==0.36.3"
+pandas = "*"
+matplotlib = "*"
 
 [requires]
 python_version = "3.6"

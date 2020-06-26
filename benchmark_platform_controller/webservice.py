@@ -6,6 +6,13 @@ from sqlalchemy_utils import database_exists, create_database
 from benchmark_platform_controller.tasks import execute_benchmark, stop_benchmark, celery_app
 from benchmark_platform_controller.conf import DATABASE_URL
 from benchmark_platform_controller.models import ExecutionModel, db
+import pandas as pd
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
+import io
+import base64
+import numpy as np
+
 
 WAIT_BEFORE_ASK_TO_RUN_AGAIN = 10
 
@@ -120,13 +127,92 @@ def run_benchmark():
 def list_executions():
     try:
         bm_results = db.session.query(ExecutionModel).order_by(ExecutionModel.id.desc())
-        bm_results_with_urls = []
+        bm_results_with_urls= []
         for result in bm_results:
-            bm_results_with_urls.append(url_for('get_result', result_id=result.result_id))
+            if result.status == "FINISHED": # checking if the benchmark run is finished or not.
+                obj = {
+                    'id' : result.result_id,
+                    'status' : result.status,
+                    'latency_avg' : result.json_results['evaluations']['benchmark_tools.evaluation.latency_evaluation']['latency_avg']['value'],
+                    'latency_std' : result.json_results['evaluations']['benchmark_tools.evaluation.latency_evaluation']['latency_std']['value'],
+                    'url' : url_for('get_result', result_id=result.result_id)
+                }
+            else: # appending None values for currently running benchmark jobs.
+                obj = {
+                    'id': result.result_id,
+                    'status': result.status,
+                    'url': url_for('get_result', result_id=result.result_id),
+                    'latency_avg': None,
+                    'latency_std': None
+                }
+
+            bm_results_with_urls.append(obj)
+
         bm_results = bm_results_with_urls
+        bm_results_df = pd.DataFrame(bm_results) # converting dict object to dataframe to use in matplotlib
+        if bm_results_df.empty: # checking if there is any data in the benchmark db.
+            imgLatencyAvg = "/static/images/no_preview.jpg" #path for no preview image when there is no data in becnhmark db
+            imgLatencyStd = "/static/images/no_preview.jpg" #path for no preview image when there is no data in benchmark db
+        else:
+            bm_results_df = bm_results_df[::-1].reset_index(drop=True)#reversing the dataframe
+            imgLatencyAvg = generateGraphLatencyAvg(bm_results_df['latency_avg']) # generating matplotlib chart for latency avg and returning the path
+            imgLatencyStd = generateGraphLatencyStd(bm_results_df['latency_std']) # generating matplotlib chart for latency std and returning the path
+
     except:
         bm_results = []
-    return render_template('list_benchmarks.html', bm_results=bm_results)
+    return render_template('base.html', bm_results=bm_results, imgLatencyAvg=imgLatencyAvg, imgLatencyStd=imgLatencyStd) # renderin the base template with requied args.
+
+
+# Created 2 private methods for generating matplotlib charts. Since, in future we might change the type of charts for latency average and latency standard deviation.
+# Thats why we have cretaed 2 separate methods to exclude the dependency.
+
+def generateGraphLatencyAvg(latency_avg):
+    latency_avg_mean = [np.mean(latency_avg)] # calculating the mean of the latency average values
+
+    #matplotlib code
+    fig = Figure()
+    axis = fig.add_subplot(1,1,1)
+    axis.set_title("Benchmark Evaluation : Latency Average ")
+    axis.set_xlabel("Benchmark Run")
+    axis.set_ylabel("Latency Average ")
+    axis.yaxis.grid()# adding horizontal grid lines
+    axis.set_xticks([])# removing the x-axis ticks
+    axis.plot(latency_avg, "ro-")
+    axis.axhline(y=latency_avg_mean, color='blue', linestyle="--", label="Mean") # adding the mean line.
+    axis.legend(loc="upper right")# setting the legen position.
+
+    # matplotlib to PNG image
+    pngImg = io.BytesIO()
+    FigureCanvas(fig).print_png(pngImg)
+
+    # png image to its base64 conversion.
+    pngImgB64 = "data:image/png;base64,"
+    pngImgB64 += base64.b64encode(pngImg.getvalue()).decode('utf8')
+    return pngImgB64
+
+def generateGraphLatencyStd(latency_std):
+    latency_std_mean = [np.mean(latency_std)]
+
+    #matplot lib code
+    fig = Figure()
+    axis = fig.add_subplot(1,1,1) # adding subplot region.
+    axis.set_title("Benchmark Evaluation : Latency Standard Deviation ")
+    axis.set_xlabel("Benchmark Run")
+    axis.set_ylabel("Latency Standard Deviation ")
+    axis.yaxis.grid()# adding horizontal grid lines
+    axis.set_xticks([])# removing the x-axis ticks
+    axis.plot(latency_std, "ro-")
+    axis.axhline(y=latency_std_mean, color='blue', linestyle="--", label="Mean")
+    axis.legend(loc="upper right")# setting the legen position.
+
+    # matplotlib to PNG image
+    pngImg = io.BytesIO()
+    FigureCanvas(fig).print_png(pngImg)
+
+    # png image to its base64 conversion.
+    pngImgB64 = "data:image/png;base64,"
+    pngImgB64 += base64.b64encode(pngImg.getvalue()).decode('utf8')
+    return pngImgB64
 
 
 def database_is_empty():

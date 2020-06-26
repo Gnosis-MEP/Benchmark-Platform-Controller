@@ -1,0 +1,158 @@
+<!--
+Created by - Indeep Singh
+
+Base templae for the hompega for Benchmark Platform Controller. 
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <title>Gnosis: Benchmark Platform</title>
+
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext" rel="stylesheet"
+          type="text/css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" type="text/css">
+<!-- Bootstrap Core Css -->
+    <link href="/static/plugins/bootstrap/css/bootstrap.css" rel="stylesheet">
+
+    <!-- Waves Effect Css -->
+    <link href="/static/plugins/node-waves/waves.css" rel="stylesheet"/>
+
+    <!-- Animation Css -->
+    <link href="/static/plugins/animate-css/animate.css" rel="stylesheet"/>
+
+    <!-- Custom Css -->
+    <link href="/static/css/style.css" rel="stylesheet">
+
+    <!-- AdminBSB Themes. You can choose a theme from css/themes instead of get all themes -->
+    <link href="/static/css/themes/all-themes.css" rel="stylesheet"/>
+</head>
+<body class="theme-red">
+
+<nav class="navbar">
+    <div class="container-fluid" style="background-color: #1e4366;">
+        <div class="navbar-header" style="height: 1.875em;">
+            <h4 style="color: white;"></h4>
+        </div>
+    </div>
+    <div class="container-fluid" style="background-color: #00a7a9;">
+        <div class="navbar-header" style="float: left;height: 85px;">
+            <h1 style="text-align:left;float:left;color:white;">Gnosis:</h1>
+            &nbsp;&nbsp;&nbsp;<h3
+                style="padding: 10px 0px;text-align:right;float:right;color:white;">Multimedia Event Processing &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Benchmark Dashboard</h3>
+        </div>
+        <div class="navbar-header" style="float: right;">
+            <a href="https://www.nuigalway.ie" target="_blank"><img src="/static/images/nuig_sm_logo.jpg" width="200px"
+                                                                    height="62px"></a>
+        </div>
+    </div>
+</nav>
+
+
+<section class="content">
+
+    <div class="container-fluid">
+        <div class="row clear-fix">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="header"
+                         style="background-color: #1e4366; color: white; padding: 10px 15px 1px 10px; border: 0px;">
+                        <div>
+                            <b>Benchmark Run Information</b>
+                        </div>
+                    </div>
+                    <div class="body"  style="max-height: 500px;overflow: auto;">
+                        <table class="table table-striped">
+                          <thead>
+                            <tr>
+                              <th scope="col">Task Id</th>
+                              <th scope="col">Status</th>
+                              <th scope="col">Latency Average</th>
+                              <th scope="col">Latency Standard Deviation</th>
+                              <th scope="col">Details</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+
+                                {% for result in bm_results %}
+                                <tr>
+                                    <td>
+                                        {{result.id}}
+                                    </td>
+                                    <td>
+                                        {{result.status}}
+                                    </td>
+                                    <td>
+                                        {{result.latency_avg}}
+                                    </td>
+                                    <td>
+                                        {{result.latency_std}}
+                                    </td>
+                                    <td>
+                                        <a href=" {{result.url}} ">Details</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                          </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clear-fix">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="header"
+                         style="background-color: #1e4366; color: white; padding: 10px 15px 1px 10px; border: 0px;">
+                        <div>
+                        </div>
+                    </div>
+                    <div class="body" style="height: 500px">
+                        <img src="{{ imgLatencyAvg }}" style="width: 900px;height: inherit;"/>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="header"
+                         style="background-color: #1e4366; color: white; padding: 10px 15px 1px 10px; border: 0px;">
+                        <div>
+                        </div>
+                    </div>
+                    <div class="body" style="height: 500px">
+                        <img src="{{ imgLatencyStd }}" style="width: 900px;height: inherit;"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- Jquery Core Js -->
+<script src="/static/plugins/jquery/jquery.min.js"></script>
+
+<!-- Bootstrap Core Js -->
+<script src="/static/plugins/bootstrap/js/bootstrap.js"></script>
+
+<!-- Select Plugin Js -->
+<script src="/static/plugins/bootstrap-select/js/bootstrap-select.js"></script>
+
+<!-- Slimscroll Plugin Js -->
+<script src="/static/plugins/jquery-slimscroll/jquery.slimscroll.js"></script>
+
+<!-- Waves Effect Plugin Js -->
+<script src="/static/plugins/node-waves/waves.js"></script>
+
+<!-- Custom Js -->
+<script src="/static/js/admin.js"></script>
+
+<!-- Demo Js -->
+<script src="./js/demo.js"></script>
+</body>
+</html>
