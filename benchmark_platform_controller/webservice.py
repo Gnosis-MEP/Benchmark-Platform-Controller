@@ -129,6 +129,23 @@ def run_benchmark():
     return make_response(jsonify({'result_id': result_id}), 200)
 
 
+@app.route('/api/v1.0/benchmarks', methods=['get'])
+def api_list_executions():
+    try:
+        bm_results = db.session.query(ExecutionModel).order_by(ExecutionModel.id.desc())
+        bm_results_with_urls = []
+        for result in bm_results:
+            bm_results_with_urls.append(url_for('get_result', result_id=result.result_id))
+        bm_results = bm_results_with_urls
+    except:
+        bm_results = []
+
+    results = {
+        'benchmarks': bm_results  # not really correct, since it should include the host...
+    }
+    return make_response(jsonify(results), 200)
+
+
 @app.route('/', methods=['get'])
 def list_executions():
     try:
