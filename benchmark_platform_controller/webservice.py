@@ -55,7 +55,7 @@ def get_result(result_id):
     finished_all_process = all([status == "SUCCESS" for status in [result_status, shutdown_status]])
     if finished_all_process:
         execution.status = execution.STATUS_FINISHED
-    db.session.commit()
+        db.session.commit()
     return make_response(jsonify({'status': execution.status, 'result': execution.json_results}), 200)
 
 
@@ -71,13 +71,19 @@ def set_result(result_id):
     if execution.status == execution.STATUS_FINISHED:
         abort(400)
 
-    shutdown_id = stop_benchmark.delay()
-    bm_results = request.json
-    execution.status = execution.STATUS_CLEANUP
-    execution.json_results = bm_results
-    execution.shutdown_id = shutdown_id.id
-    db.session.commit()
+    if execution.status != execution.STATUS_CLEANUP:
+        shutdown_id = stop_benchmark.delay()
+        bm_results = request.json
+        execution.status = execution.STATUS_CLEANUP
+        execution.json_results = bm_results
+        execution.shutdown_id = shutdown_id.id
 
+    # Bad BM, should forcefully set it to finished this should be done with care
+    # paying attention to see if there are no missing docker containers running yet.
+    else:
+        execution.status = execution.STATUS_FINISHED
+
+    db.session.commit()
     return make_response(jsonify({'status': 'ok'}), 200)
 
 
