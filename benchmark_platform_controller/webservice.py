@@ -3,7 +3,7 @@ from flask import Flask, request, jsonify, make_response, abort, url_for, render
 from celery.result import AsyncResult
 from sqlalchemy_utils import database_exists, create_database
 
-from benchmark_platform_controller.tasks import execute_benchmark, stop_benchmark, celery_app
+from benchmark_platform_controller.tasks import execute_benchmark, stop_benchmark, check_and_mark_finished_benchmark, celery_app
 from benchmark_platform_controller.conf import DATABASE_URL
 from benchmark_platform_controller.models import ExecutionModel, db
 import pandas as pd
@@ -61,8 +61,6 @@ def get_result(result_id):
 
 @app.route('/api/v1.0/set_result/<string:result_id>', methods=['post'])
 def set_result(result_id):
-    if not request.json:
-        abort(400)
     try:
         execution = db.session.query(ExecutionModel).filter_by(result_id=result_id).one()
     except:
@@ -72,7 +70,10 @@ def set_result(result_id):
         abort(400)
 
     if execution.status != execution.STATUS_CLEANUP:
+        if not request.json:
+            abort(400)
         shutdown_id = stop_benchmark.delay()
+        check_and_mark_finished_benchmark.delay(url_for('mark_execution_as_finished', result_id=result_id))
         bm_results = request.json
         execution.status = execution.STATUS_CLEANUP
         execution.json_results = bm_results
@@ -85,6 +86,39 @@ def set_result(result_id):
 
     db.session.commit()
     return make_response(jsonify({'status': 'ok'}), 200)
+
+
+@app.route('/api/v1.0/mask_as_finished/<string:result_id>', methods=['post'])
+def mark_execution_as_finished(result_id):
+    if not request.json:
+        abort(400)
+
+    try:
+        execution = db.session.query(ExecutionModel).filter_by(result_id=result_id).one()
+    except:
+        abort(404)
+
+    if execution.status == execution.STATUS_FINISHED:
+        abort(400)
+    result = AsyncResult(id=result_id, app=celery_app)
+    result_status = result.status
+    shutdown = None
+    shutdown_status = ''
+    if execution.shutdown_id:
+        shutdown = AsyncResult(id=execution.shutdown_id, app=celery_app)
+        shutdown_status = shutdown.status
+
+    current_status = [result_status, shutdown_status]
+    finished_all_process = all([status == "SUCCESS" for status in current_status])
+
+    forced = request.json.get('forced', False)
+    status = 202
+    if finished_all_process or forced:
+        execution.status = execution.STATUS_FINISHED
+        db.session.commit()
+        status = 200
+    return make_response(
+        jsonify({'status': execution.status, 'processes': finished_all_process, 'forced': forced}), status)
 
 
 def get_clear_to_go():

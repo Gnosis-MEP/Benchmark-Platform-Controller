@@ -1,6 +1,9 @@
+import datetime
 import json
 import os
 import subprocess
+import time
+from urllib import request
 
 from flask import Flask
 from celery import Celery
@@ -18,7 +21,7 @@ from benchmark_platform_controller.conf import (
     BENCHMARK_JSON_CONFIG_FILENAME,
     WEBHOOK_BASE_URL,
     DEFAULT_BENCHMARK_JSON_FILE,
-    EXECUTION_TIMEOUT
+    CLEANUP_TIMEOUT
 )
 
 
@@ -97,3 +100,41 @@ def stop_benchmark():
     )
 
     return c
+
+
+def check_has_timed_out(start_time):
+    total_duration = datetime.datetime.now() - start_time
+    total_duration = total_duration.total_seconds()
+    has_timed_out = total_duration > CLEANUP_TIMEOUT
+    return has_timed_out
+
+def make_request_post(url, data):
+
+    params = json.dumps(data).encode('utf8')
+    req = request.Request(url,
+                          data=params, headers={'content-type': 'application/json'})
+    response = request.urlopen(req)
+    return response
+
+
+@celery_app.task()
+def check_and_mark_finished_benchmark(mark_as_finished_url_endpoint):
+    BASE_URL = WEBHOOK_BASE_URL.split('/api')[0]
+    final_url = BASE_URL + mark_as_finished_url_endpoint
+    start_time = datetime.datetime.now()
+    params = {'forced': False}
+    while not check_has_timed_out(start_time):
+        time.sleep(11)
+        print(f'Trying to Marking execution as finished on url {final_url}')
+        res = make_request_post(final_url, params)
+        if res.status == 200:
+            return True
+        elif res.status == 202:
+            status = json.loads(res.read().decode('utf8'))
+            print(f'Current Status: {status}')
+            print('Cleanup not finished yet, waiting before trying again or timeout.')
+
+    params['forced'] = False
+    print(f'CLEAN UP TIMEOUT! FORCING EXECUTION AS FINISHED: {final_url}')
+    res = make_request_post(final_url, params)
+    return False
