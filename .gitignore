@@ -117,3 +117,4 @@ dmypy.json
 ./tmp/*
 *.db
 configs.json
+datasets/*

@@ -3,3 +3,4 @@ dist/*
 .env
 Dockerfile
 benchmark_platform_controller/*.db
+datasets/*
