@@ -163,6 +163,37 @@ If `override_services` is empty, it will use the specified version as it is.
 }
 ```
 
+#### Overriding Benchmark Tools configurations
+```json
+{
+    "override_services": {
+    },
+    "target_system":{
+    },
+    "benchmark": {
+        //... benchmark tools valid config json goes in here
+    }
+}
+```
+
+#### Datasets Usage
+This datasets need to be available in the `./datasets` directory, and the `DATASETS_PATH_ON_HOST` env var needs to be configured to the absolute path to this directory in the **HOST** machine.
+```json
+{
+    "override_services": {
+    },
+    "target_system":{
+    },
+    "datasets": [
+        "coco2017-val-300x300-30fps.flv",
+        "coco2017-val-300x300-60fps.flv"
+    ]
+}
+```
+Any dataset listed in there, will be made available as a VOD (Video On Demand) at the `media-server` on the url `rtmp://<machine_ip>/vod2/<dataset-name>`. Eg: `rtmp://172.17.0.1/vod2/coco2017-val-300x300-30fps.flv`.
+This configuration only makes the dataset videos available, it doesn't configure a publisher for this. To do that one needs to use a custom `benchmark` configuration with the appropriate data to use this dataset (eg: Registering a publisher that uses the VOD url for that dataset).
+
+
 ### Response
 Sending this request should give back two possible responses:
 

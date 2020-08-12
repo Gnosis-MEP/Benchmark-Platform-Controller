@@ -75,10 +75,10 @@ def check_results(base_url, result_id, start_time):
             return check_results(base_url, result_id, start_time)
 
 
-def run(base_url, datasets, benchmark, start_time):
+def run(base_url, override_services, datasets, benchmark, start_time):
     run_benchmark_url = build_url(base_url, RUN_BENCHMARK_ENDPOINT)
     params = {
-        'override_services': {},
+        'override_services': override_services,
         'benchmark': benchmark,
         'datasets': datasets
     }
@@ -92,7 +92,7 @@ def run(base_url, datasets, benchmark, start_time):
             wait_time = int(data['wait'])
             print(f'Service is busy, waiting for {wait_time} seconds before next try...')
             time.sleep(wait_time)
-            return run(base_url, datasets, benchmark, start_time)
+            return run(base_url, override_services, datasets, benchmark, start_time)
         else:
             result_id = data['result_id']
             print(f'Waiting {RECHECK_RESULT_TIME} seconds before checking results...')
@@ -116,15 +116,18 @@ def make_request_post(url, data):
 
 if __name__ == '__main__':
     benchmark_platform_controller_url = sys.argv[1]
-    datasets = [sys.argv[2]]
-    benchmark_config_file = sys.argv[3]
+    override_services_file = sys.argv[2]
+    datasets = [sys.argv[3]]
+    benchmark_config_file = sys.argv[4]
     benchmark = None
     with open(benchmark_config_file, 'r') as f:
         benchmark = json.load(f)
+    with open(override_services_file, 'r') as f:
+        override_services = json.load(f)
 
     results = []
     start_time = datetime.datetime.now()
-    result = run(benchmark_platform_controller_url, datasets, benchmark, start_time)
+    result = run(benchmark_platform_controller_url, override_services, datasets, benchmark, start_time)
     results.append(result)
     print(results)
     exit(0)
