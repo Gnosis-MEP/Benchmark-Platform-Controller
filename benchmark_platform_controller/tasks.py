@@ -19,6 +19,7 @@ from benchmark_platform_controller.conf import (
     TARGET_COMPOSE_OVERRIDE_FILENAME,
     TARGET_SYSTEM_JSON_CONFIG_FILENAME,
     BENCHMARK_JSON_CONFIG_FILENAME,
+    DATASETS_PATH_ON_HOST,
     WEBHOOK_BASE_URL,
     DEFAULT_BENCHMARK_JSON_FILE,
     CLEANUP_TIMEOUT
@@ -64,19 +65,52 @@ def default_benchmark_confs():
     return configs
 
 
+def map_dataset_to_volume(dataset):
+    host_path = f'{os.path.join(DATASETS_PATH_ON_HOST, dataset)}'
+    container_path = f'{os.path.join("/var/media_files/mp4s", dataset)}'
+    volume = f'{host_path}:{container_path}'
+    return volume
+
+
+def setup_datasets_mediaserver_volume_info(datasets_confgs, override_services):
+    if len(datasets_confgs) == 0:
+        return override_services
+
+    service_name = 'media-server'
+    service_override = {
+        'volumes': [
+            map_dataset_to_volume(dataset) for dataset in datasets_confgs
+        ]
+    }
+
+    if service_name in override_services:
+        if 'volumes' in override_services[service_name]:
+            volumes = service_override['volumes']
+            volumes.extend(override_services[service_name]['volumes'])
+            override_services[service_name]['volumes'] = volumes
+        else:
+            override_services[service_name].update(service_override)
+    else:
+        override_services[service_name] = service_override
+    return override_services
+
+
 @celery_app.task(bind=True)
 def execute_benchmark(self, execution_configurations):
     if not os.path.exists(DATA_DIR):
         os.makedirs(DATA_DIR)
     execution_id = self.request.id
     override_services = execution_configurations.get('override_services', {})
+    datasets_confgs = execution_configurations.get('datasets', {})
+    override_services = setup_datasets_mediaserver_volume_info(datasets_confgs, override_services)
 
     target_system_confs = execution_configurations.get('target_system', {})
+
     compose_fp = create_override_yaml_file(
         DATA_DIR, TARGET_COMPOSE_OVERRIDE_FILENAME, override_services)
     targe_system_js_confs = create_json_conf_file(DATA_DIR, TARGET_SYSTEM_JSON_CONFIG_FILENAME, target_system_confs)
 
-    benchmark_confs = default_benchmark_confs()
+    benchmark_confs = execution_configurations.get('benchmark', default_benchmark_confs())
     set_result_url = f"{WEBHOOK_BASE_URL}/" + str(execution_id)
     benchmark_confs['result_webhook'] = set_result_url
 

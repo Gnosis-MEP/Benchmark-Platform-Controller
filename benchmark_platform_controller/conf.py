@@ -28,6 +28,8 @@ STOP_BENCHMARK_SCRIPT = config(
 TIMEOUT_SCRIPT = config(
     'TIMEOUT_SCRIPT', default=os.path.join(SCRIPTS_DIR, 'timeout.py'))
 
+DATASETS_PATH_ON_HOST = config('DATASETS_PATH_ON_HOST', default=os.path.join(PROJECT_ROOT, 'datasets'))
+
 
 WEBHOOK_BASE_URL = config('WEBHOOK_BASE_URL', default='http://localhost:5000/api/v1.0/set_result')
 

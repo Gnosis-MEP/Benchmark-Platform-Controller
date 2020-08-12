@@ -8,3 +8,6 @@ ${DIR}/stop_target_system.sh
 ${DIR}/stop_benchmark_system.sh
 cd $DIR
 rm -rf ${DATA_DIR}
+docker container prune -f
+docker volume prune -f
+docker image prune -f

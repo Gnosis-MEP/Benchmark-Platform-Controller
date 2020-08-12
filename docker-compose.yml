@@ -27,7 +27,6 @@ services:
       dockerfile: 'Dockerfile'
     volumes:
       - ./scripts:/service/scripts
-      - ./datasets:/service/datasets
       - ./configs.json:/service/configs.json
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
@@ -48,3 +47,4 @@ services:
       - DATA_DIR=/service/tmp
       - DATABASE_URL=${DATABASE_URL}
       - EXECUTION_TIMEOUT=${EXECUTION_TIMEOUT}
+      - DATASETS_PATH_ON_HOST=${DATASETS_PATH_ON_HOST}
