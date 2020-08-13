@@ -31,6 +31,7 @@ class ExecutionModel(db.Model):
         ),
         nullable=True
     )
+    artefacts = db.Column(db.String(250), nullable=True)
 
     def __repr__(self):
-        return f'<id: {self.id}, result_id:{self.result_id}, shutdown_id:{self.shutdown_id}, json_results: {self.json_results}, status: {self.status}>'
+        return f'<id: {self.id}, result_id:{self.result_id}, shutdown_id:{self.shutdown_id}, json_results: {self.json_results}, status: {self.status}, artefacts: {self.artefacts}>'

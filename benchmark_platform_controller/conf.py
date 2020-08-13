@@ -7,6 +7,8 @@ PROJECT_ROOT = os.path.dirname(SOURCE_DIR)
 SCRIPTS_DIR = os.path.join(PROJECT_ROOT, 'scripts')
 
 DATA_DIR = config('DATA_DIR', default='/tmp/data')
+ARTEFACTS_DIR = config('ARTEFACTS_DIR', default=os.path.join(SOURCE_DIR, 'artefacts'))
+
 TARGET_COMPOSE_OVERRIDE_FILENAME = config('TARGET_COMPOSE_OVERRIDE_FILENAME', default='docker-compose-override.yml')
 
 TARGET_SYSTEM_JSON_CONFIG_FILENAME = config('TARGET_SYSTEM_JSON_CONFIG_FILENAME', default='ts.json')

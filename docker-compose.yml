@@ -26,6 +26,7 @@ services:
       context: '.'
       dockerfile: 'Dockerfile'
     volumes:
+      - ./artefacts:/service/artefacts
       - ./scripts:/service/scripts
       - ./configs.json:/service/configs.json
       - /var/run/docker.sock:/var/run/docker.sock
@@ -45,6 +46,7 @@ services:
       - DEFAULT_BENCHMARK_JSON_FILE=/service/configs.json
       - WEBHOOK_BASE_URL=${WEBHOOK_BASE_URL}
       - DATA_DIR=/service/tmp
+      - ARTEFACTS_DIR=/service/artefacts
       - DATABASE_URL=${DATABASE_URL}
       - EXECUTION_TIMEOUT=${EXECUTION_TIMEOUT}
       - DATASETS_PATH_ON_HOST=${DATASETS_PATH_ON_HOST}

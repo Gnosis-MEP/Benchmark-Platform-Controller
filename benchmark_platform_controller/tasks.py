@@ -126,8 +126,8 @@ def execute_benchmark(self, execution_configurations):
 
 
 @celery_app.task()
-def stop_benchmark():
-    args = [STOP_BENCHMARK_SCRIPT]
+def stop_benchmark(result_id):
+    args = [STOP_BENCHMARK_SCRIPT, result_id]
     print(args)
     c = subprocess.call(
         args

@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 import base64
 import io
+import os
 
 from celery.result import AsyncResult
-from flask import Flask, request, jsonify, make_response, abort, url_for, render_template
+from flask import Flask, request, jsonify, make_response, abort, url_for, render_template, send_file
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 from sqlalchemy_utils import database_exists, create_database
@@ -16,7 +17,7 @@ from benchmark_platform_controller.tasks import (
     check_and_mark_finished_benchmark,
     celery_app
 )
-from benchmark_platform_controller.conf import DATABASE_URL
+from benchmark_platform_controller.conf import DATABASE_URL, ARTEFACTS_DIR
 from benchmark_platform_controller.models import ExecutionModel, db
 
 
@@ -78,7 +79,7 @@ def set_result(result_id):
     if execution.status != execution.STATUS_CLEANUP:
         if not request.json:
             abort(400)
-        shutdown_id = stop_benchmark.delay()
+        shutdown_id = stop_benchmark.delay(result_id)
         check_and_mark_finished_benchmark.delay(url_for('mark_execution_as_finished', result_id=result_id))
         bm_results = request.json
         execution.status = execution.STATUS_CLEANUP
@@ -167,6 +168,46 @@ def run_benchmark():
     print(f'inside db: {[e.id for e in db.session.query(ExecutionModel).all()]}')
 
     return make_response(jsonify({'result_id': result_id}), 200)
+
+
+@app.route('/api/v1.0/set_artefacts/<string:result_id>', methods=['post'])
+def set_artefacts(result_id):
+    if not request.json:
+        abort(400)
+
+    try:
+        execution = db.session.query(ExecutionModel).filter_by(result_id=result_id).one()
+    except:
+        abort(404)
+
+    artefacts = request.json.get('artefacts')
+    if artefacts is not None:
+        execution.artefacts = artefacts
+        db.session.commit()
+    status = 200
+
+    return make_response(
+        jsonify({'status': 'ok'}), status)
+
+
+@app.route('/api/v1.0/get_artefacts/<string:result_id>')
+def get_artefacts(result_id):
+    try:
+        execution = db.session.query(ExecutionModel).filter_by(result_id=result_id).one()
+    except:
+        abort(404)
+
+    if execution.artefacts is None:
+        abort(404)
+
+    artefact_path = os.path.join(ARTEFACTS_DIR, execution.artefacts)
+    try:
+        return send_file(
+            artefact_path, attachment_filename=execution.artefacts
+        )
+    except Exception as e:
+        print(e)
+        abort(404)
 
 
 @app.route('/api/v1.0/benchmarks', methods=['get'])
