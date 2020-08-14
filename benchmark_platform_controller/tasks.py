@@ -105,6 +105,13 @@ def execute_benchmark(self, execution_configurations):
     override_services = setup_datasets_mediaserver_volume_info(datasets_confgs, override_services)
 
     target_system_confs = execution_configurations.get('target_system', {})
+    sleep_after_target_startup = target_system_confs.get('sleep_after_target_startup')
+    call_kwargs = {}
+    if sleep_after_target_startup is not None:
+        sleep_after_target_startup = str(int(sleep_after_target_startup))
+        new_env = os.environ.copy()
+        new_env['SLEEP_AFTER_TARGET_STARTUP'] = sleep_after_target_startup
+        call_kwargs['env'] = new_env
 
     compose_fp = create_override_yaml_file(
         DATA_DIR, TARGET_COMPOSE_OVERRIDE_FILENAME, override_services)
@@ -116,8 +123,10 @@ def execute_benchmark(self, execution_configurations):
 
     benchmark_js_confs = create_json_conf_file(DATA_DIR, BENCHMARK_JSON_CONFIG_FILENAME, benchmark_confs)
 
+    call_args = [RUN_BENCHMARK_SCRIPT, execution_id]
     c = subprocess.call(
-        [RUN_BENCHMARK_SCRIPT, execution_id]
+        call_args,
+        **call_kwargs
     )
 
     # get_result_url = set_result_url.replace('set_result', 'get_result')
