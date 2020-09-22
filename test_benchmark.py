@@ -83,6 +83,15 @@ def run(base_url, service_name, image_name, tag, start_time):
         "override_services": {
             service_name: {
                 'image': f'{image_name}:{tag_to_use}'
+            },
+            'object-detection-ssd-gpu': {
+                'image': f'registry.insight-centre.org/sit/mps/object-detection-service:master'
+            },
+            'matcher': {
+                'image': f'registry.insight-centre.org/sit/mps/matcher:master'
+            },
+            'window-manager': {
+                'image': f'registry.insight-centre.org/sit/mps/window-manager:master'
             }
         }
     }
