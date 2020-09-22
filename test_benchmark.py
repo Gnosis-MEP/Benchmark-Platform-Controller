@@ -83,10 +83,7 @@ def run(base_url, service_name, image_name, tag, start_time):
         "override_services": {
             service_name: {
                 'image': f'{image_name}:{tag_to_use}'
-            },
-            'matcher': {
-                'image': f'registry.insight-centre.org/sit/mps/matcher:master'
-            },
+            }
         }
     }
     # params = {
