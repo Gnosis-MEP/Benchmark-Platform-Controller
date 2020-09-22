@@ -38,7 +38,7 @@
                         "actions": [
                             {
                                 "action": "addQuery",
-                                "query": "select object_detection from publisher1 where (object1.label = car) within TUMBLING_COUNT_WINDOW(4) withconfidence >50",
+                                "query": "REGISTER QUERY testQuery OUTPUT K_GRAPH CONTENT object_detection MATCH (c:Car) WHERE c.label='CAR' FROM publisher1 WITHIN TUMBLING_COUNT_WINDOW(4) RETURN c",
                                 "subscriber_id": "3",
                                 "query_id": "1"
                             },
