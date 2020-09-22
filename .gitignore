@@ -119,3 +119,6 @@ dmypy.json
 configs.json
 datasets/*
 artefacts/*
+
+# pycharm folder
+.idea/
