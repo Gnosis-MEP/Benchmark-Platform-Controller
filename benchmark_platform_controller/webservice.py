@@ -227,6 +227,13 @@ def api_list_executions():
     return make_response(jsonify(results), 200)
 
 
+############### end of API
+
+
+
+
+
+
 @app.route('/', methods=['get'])
 def list_executions():
     try:
@@ -270,6 +277,10 @@ def list_executions():
         bm_results = []
     # renderin the base template with requied args.
     return render_template('base.html', bm_results=bm_results, imgLatencyAvg=imgLatencyAvg, imgLatencyStd=imgLatencyStd)
+
+
+
+
 
 
 # Created 2 private methods for generating matplotlib charts.
