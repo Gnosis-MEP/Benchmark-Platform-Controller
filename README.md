@@ -176,6 +176,21 @@ If `override_services` is empty, it will use the specified version as it is.
 }
 ```
 
+#### Setting specific Benchmark Tools version
+It is possible to specify a given git tag/branch/commit hash for the benchmark-tools project, which will make sure that the benchmark is executed with that specific version. However, the specified version needs to be configured to use a different docker image.
+```json
+{
+    "override_services": {
+    },
+    "target_system":{
+    },
+    "benchmark": {
+        "benchmark-version": "some-git-hash/tag",
+        //... rest of the benchmark tools valid config json goes in here
+    }
+}
+```
+
 #### Datasets Usage
 This datasets need to be available in the `./datasets` directory, and the `DATASETS_PATH_ON_HOST` env var needs to be configured to the absolute path to this directory in the **HOST** machine.
 ```json
