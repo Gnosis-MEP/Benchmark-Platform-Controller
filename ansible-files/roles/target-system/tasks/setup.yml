@@ -3,7 +3,7 @@
   git:
     repo: "https://{{ gitlab_user | urlencode }}:{{ gitlab_pass | urlencode }}@gitlab.insight-centre.org/SIT/mps/mps-node.git"
     dest: "{{ target_system_dest_dir }}"
-    version: "{{ target_system_version }}"
+    version: "{{ target_system.version }}"
 
 - name: Add docker-compose.override.yml based on template
   template:
@@ -11,7 +11,7 @@
     dest: "{{ target_system_dest_dir }}/docker-compose.override.yml"
 
 - name: set node version
-  shell: ./set_node_version.sh "{{ target_system_version }}"
+  shell: ./set_node_version.sh "{{ target_system.version }}"
   args:
     chdir: "{{ target_system_dest_dir }}"
 

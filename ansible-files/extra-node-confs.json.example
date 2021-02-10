@@ -1,14 +1,16 @@
 {
     "override_services": {
-        "adaptation-planner": {
+        "object-detection-ssd-gpu": {
             "environment": [
                 "SCHEDULER_PLANNER_TYPE=simple_fixed",
                 "MOCKED_OD_STREAM_KEY=object-detection-ssd-gpu-data"
+                "REDIS_ADDRESS=10.2.16.176",
+                "TRACER_REPORTING_HOST=10.2.16.176",
             ]
         }
     },
     "target_system": {
         "version": "v2.1.0"
     },
-    "start_only_services": "object-detection-ssd-gpu object-detection-ssd"
+    "start_only_services": "object-detection-ssd-gpu object-detection-ssd adaptation-planner"
 }
