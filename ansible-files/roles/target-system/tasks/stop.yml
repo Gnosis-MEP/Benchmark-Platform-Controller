@@ -1,0 +1,5 @@
+---
+- name: load_env and execute compose-all.sh down command
+  shell: . {{ target_system_dest_dir }}/load_env.sh && ./compose-all.sh down
+  args:
+    chdir: "{{ target_system_dest_dir }}"

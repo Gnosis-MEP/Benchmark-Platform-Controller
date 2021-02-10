@@ -1,0 +1,26 @@
+---
+- name: Retrieve target system into destination directory
+  git:
+    repo: "https://{{ gitlab_user | urlencode }}:{{ gitlab_pass | urlencode }}@gitlab.insight-centre.org/SIT/mps/mps-node.git"
+    dest: "{{ target_system_dest_dir }}"
+    version: "{{ target_system_version }}"
+
+- name: Add docker-compose.override.yml based on template
+  template:
+    src: ../templates/docker-compose.override.j2
+    dest: "{{ target_system_dest_dir }}/docker-compose.override.yml"
+
+- name: set node version
+  shell: ./set_node_version.sh "{{ target_system_version }}"
+  args:
+    chdir: "{{ target_system_dest_dir }}"
+
+- name: Copy .env file
+  copy:
+    src: "{{ target_system_dest_dir }}/example.env"
+    dest: "{{ target_system_dest_dir }}/.env"
+
+- name: reset repo changes
+  shell: git checkout .
+  args:
+    chdir: "{{ target_system_dest_dir }}"

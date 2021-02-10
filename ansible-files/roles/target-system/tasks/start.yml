@@ -1,0 +1,12 @@
+---
+- name: load_env and execute compose-all.sh command
+  shell: . {{ target_system_dest_dir }}/load_env.sh && ./compose-all.sh up -d
+  args:
+    chdir: "{{ target_system_dest_dir }}"
+  when: start_only_services is undefined
+
+- name: load_env and execute compose-all.sh command with only specific service to up
+  shell: . {{ target_system_dest_dir }}/load_env.sh && ./compose-all.sh up -d {{ start_only_services }}
+  args:
+    chdir: "{{ target_system_dest_dir }}"
+  when: start_only_services is defined

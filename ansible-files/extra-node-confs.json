@@ -1,0 +1,14 @@
+{
+    "override_services": {
+        "adaptation-planner": {
+            "environment": [
+                "SCHEDULER_PLANNER_TYPE=simple_fixed",
+                "MOCKED_OD_STREAM_KEY=object-detection-ssd-gpu-data"
+            ]
+        }
+    },
+    "target_system": {
+        "version": "v2.1.0"
+    },
+    "start_only_services": "object-detection-ssd-gpu object-detection-ssd"
+}

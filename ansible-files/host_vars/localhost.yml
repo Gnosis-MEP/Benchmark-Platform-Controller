@@ -1,0 +1,6 @@
+---
+# file: group_vars/test.yml
+target_system_dest_dir: /tmp/test
+# target_system_version: "v2.1.0"
+ansible_python_interpreter: python
+remote_user: arruda

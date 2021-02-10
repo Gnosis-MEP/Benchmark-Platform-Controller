@@ -1,0 +1,15 @@
+---
+- name: Import tasks setup.yml
+  import_tasks: setup.yml
+  tags:
+    - setup
+
+- name: Import tasks start.yml
+  import_tasks: start.yml
+  tags:
+    - start
+
+- name: Import tasks stop.yml
+  import_tasks: stop.yml
+  tags:
+    - stop

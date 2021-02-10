@@ -1,0 +1,4 @@
+# ---
+# # file: group_vars/all
+# gitlab_user:
+# gitlab_pass:

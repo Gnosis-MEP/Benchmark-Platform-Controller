@@ -1,0 +1,5 @@
+---
+- name: Get updated files from git repository
+  git:
+    repo: "https://{{ gitlab_user | urlencode }}:{{ gitlab_pass | urlencode }}@gitlab.insight-centre.org/SIT/mps/benchmark-tools.git"
+    dest: /home/arruda/temp/teste
