@@ -15,6 +15,15 @@ source load_env.sh
 ./${COMPOSE_SCRIPT} -f ${TARGET_COMPOSE_OVERRIDE_FILENAME} pull
 ./${COMPOSE_SCRIPT} -f ${TARGET_COMPOSE_OVERRIDE_FILENAME} up -d
 
+sleep 1
+echo "checking for extra nodes..."
+if [ -f "${DATA_DIR}/${EXTRANODE_JSON_CONFIG_FILENAME}" ]; then
+    echo "${DATA_DIR}/${EXTRANODE_JSON_CONFIG_FILENAME} exists. Will setup and start extra node"
+else
+    echo "${DATA_DIR}/${EXTRANODE_JSON_CONFIG_FILENAME} does not exists."
+fi
+
+
 # docker-compose -f docker-compose.yml -f docker-compose-with-gpu-obj-detection.yml -f ${TARGET_COMPOSE_OVERRIDE_FILENAME} pull
 
 # docker-compose -f docker-compose.yml -f docker-compose-with-gpu-obj-detection.yml -f ${TARGET_COMPOSE_OVERRIDE_FILENAME} up -d

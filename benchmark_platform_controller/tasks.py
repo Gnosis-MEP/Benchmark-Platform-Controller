@@ -22,6 +22,7 @@ from benchmark_platform_controller.conf import (
     DATASETS_PATH_ON_HOST,
     WEBHOOK_BASE_URL,
     DEFAULT_BENCHMARK_JSON_FILE,
+    EXTRANODE_JSON_CONFIG_FILENAME,
     CLEANUP_TIMEOUT
 )
 
@@ -105,6 +106,11 @@ def execute_benchmark(self, execution_configurations):
     override_services = setup_datasets_mediaserver_volume_info(datasets_confgs, override_services)
 
     target_system_confs = execution_configurations.get('target_system', {})
+    extra_nodes_configs = execution_configurations.get('extra_nodes', {'jetson': {}})
+
+    # only considering jetson for now, to make it simple
+    extra_nodes_configs = extra_nodes_configs.get('jetson', {})
+
     sleep_after_target_startup = target_system_confs.get('sleep_after_target_startup')
     call_kwargs = {}
     if sleep_after_target_startup is not None:
@@ -116,6 +122,9 @@ def execute_benchmark(self, execution_configurations):
     compose_fp = create_override_yaml_file(
         DATA_DIR, TARGET_COMPOSE_OVERRIDE_FILENAME, override_services)
     targe_system_js_confs = create_json_conf_file(DATA_DIR, TARGET_SYSTEM_JSON_CONFIG_FILENAME, target_system_confs)
+
+    if extra_nodes_configs:
+        extra_nodes_configs_js = create_json_conf_file(DATA_DIR, EXTRANODE_JSON_CONFIG_FILENAME, extra_nodes_configs)
 
     benchmark_confs = execution_configurations.get('benchmark', default_benchmark_confs())
     set_result_url = f"{WEBHOOK_BASE_URL}/" + str(execution_id)

@@ -29,5 +29,3 @@ ${DIR}/start_target_system.sh
 ## start benchmark system
 ${DIR}/start_benchmark_system.sh
 
-# ${DIR}/tag_image_latest_and_push.sh
-
