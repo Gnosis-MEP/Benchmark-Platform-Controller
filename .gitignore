@@ -119,6 +119,7 @@ dmypy.json
 configs.json
 datasets/*
 artefacts/*
+ansible-files/inventory.ini
 
 # pycharm folder
 .idea/
