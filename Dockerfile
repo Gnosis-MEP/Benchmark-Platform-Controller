@@ -22,5 +22,3 @@ RUN pip install -U pip==21.0.1 && \
 ADD . /service
 RUN pip install -e . && \
     rm -rf /tmp/pip* /root/.cache
-
-

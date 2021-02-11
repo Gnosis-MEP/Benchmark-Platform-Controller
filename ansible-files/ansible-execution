@@ -1,3 +1,3 @@
 ansible-playbook -i example-inventory.ini benchmark_tools.yml -e gitlab_user=${GITLAB_USER} -e gitlab_pass=${GITLAB_PASS} -l example
 ansible-playbook -i example-inventory.ini target-system.yml -e target_system_version="v2.1.0" -e '{"override_services": {"adaptation-planner": {"environment": ["SCHEDULER_PLANNER_TYPE=simple_fixed", "MOCKED_OD_STREAM_KEY=object-detection-ssd-gpu-data"]}}}' -e gitlab_user=${GITLAB_USER} -e gitlab_pass=${GITLAB_PASS} -e 'start_only_services="object-detection-ssd-gpu object-detection-ssd"' -l example --tags "setup,start,stop"
-ansible-playbook -i example-inventory.ini target-system.yml -e "@extra-node-confs.json" -e gitlab_user=${GITLAB_USER} -e gitlab_pass=${GITLAB_PASS} -l example --tags "setup"
+ansible-playbook -i example-inventory.ini target-system.yml -e "@extra-node-confs.json" -e gitlab_user=${GITLAB_USER} -e gitlab_pass=${GITLAB_PASS} -l extra --tags "setup"

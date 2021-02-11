@@ -1,0 +1,5 @@
+---
+- name: Ensures gitlab docker registry is enabled with CI user
+  shell: docker login -u {{ gitlab_user }} -p {{ gitlab_pass }} registry.insight-centre.org
+  tags:
+    - setup

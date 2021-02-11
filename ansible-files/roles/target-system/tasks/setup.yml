@@ -1,4 +1,14 @@
 ---
+- name: Removes existing target system destination directory
+  file:
+    path: "{{ target_system_dest_dir }}"
+    state: absent
+
+- name: Creates target system destination directory
+  file:
+    path: "{{ target_system_dest_dir }}"
+    state: directory
+
 - name: Retrieve target system into destination directory
   git:
     repo: "https://{{ gitlab_user | urlencode }}:{{ gitlab_pass | urlencode }}@gitlab.insight-centre.org/SIT/mps/mps-node.git"
@@ -10,6 +20,7 @@
     src: ../templates/docker-compose.override.j2
     dest: "{{ target_system_dest_dir }}/docker-compose.override.yml"
 
+
 - name: set node version
   shell: ./set_node_version.sh "{{ target_system.version }}"
   args:
@@ -17,10 +28,24 @@
 
 - name: Copy .env file
   copy:
+    remote_src: true
     src: "{{ target_system_dest_dir }}/example.env"
     dest: "{{ target_system_dest_dir }}/.env"
+    force: true
 
 - name: reset repo changes
   shell: git checkout .
   args:
     chdir: "{{ target_system_dest_dir }}"
+
+- name: load_env and execute compose-all.sh pull
+  shell: . {{ target_system_dest_dir }}/load_env.sh && ./compose-all.sh pull
+  args:
+    chdir: "{{ target_system_dest_dir }}"
+  when: start_only_services is undefined
+
+- name: load_env and execute compose-all.sh command with only specific service to pull
+  shell: . {{ target_system_dest_dir }}/load_env.sh && ./compose-all.sh pull {{ start_only_services }}
+  args:
+    chdir: "{{ target_system_dest_dir }}"
+  when: start_only_services is defined

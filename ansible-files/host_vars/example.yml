@@ -1,0 +1,7 @@
+---
+# file: group_vars/example.yml
+target_system_dest_dir: /tmp/benchmark
+# target_system_version: "v2.1.0"
+ansible_python_interpreter: python
+ansible_user: user
+ansible_ssh_pass: pass
