@@ -50,5 +50,6 @@ services:
       - DATA_DIR=/service/tmp
       - ARTEFACTS_DIR=/service/artefacts
       - DATABASE_URL=${DATABASE_URL}
+      - CLEANUP_TIMEOUT=${CLEANUP_TIMEOUT}
       - EXECUTION_TIMEOUT=${EXECUTION_TIMEOUT}
       - DATASETS_PATH_ON_HOST=${DATASETS_PATH_ON_HOST}

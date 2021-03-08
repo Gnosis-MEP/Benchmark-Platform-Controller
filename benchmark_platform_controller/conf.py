@@ -39,6 +39,9 @@ WEBHOOK_BASE_URL = config('WEBHOOK_BASE_URL', default='http://localhost:5000/api
 
 EXECUTION_TIMEOUT = config('EXECUTION_TIMEOUT', default=60)
 
-CLEANUP_TIMEOUT = config('CLEANUP_TIMEOUT', default=20)
+CLEANUP_TIMEOUT = config('CLEANUP_TIMEOUT', default=20, cast=float)
 
 LOGGING_LEVEL = config('LOGGING_LEVEL', default='DEBUG')
+
+
+

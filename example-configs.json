@@ -38,7 +38,7 @@
                         "actions": [
                             {
                                 "action": "addQuery",
-                                "query": "REGISTER QUERY testQuery OUTPUT K_GRAPH_DICT CONTENT object_detection MATCH (c:Car) WHERE c.label='CAR' FROM publisher1 WITHIN TUMBLING_COUNT_WINDOW(4) RETURN c",
+                                "query": "REGISTER QUERY testQuery OUTPUT K_GRAPH_DICT CONTENT ObjectDetection MATCH (c:Car) WHERE c.label='CAR' FROM publisher1 WITHIN TUMBLING_COUNT_WINDOW(4) RETURN c",
                                 "subscriber_id": "3",
                                 "query_id": "1"
                             },
