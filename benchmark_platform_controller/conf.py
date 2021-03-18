@@ -11,6 +11,9 @@ ARTEFACTS_DIR = config('ARTEFACTS_DIR', default=os.path.join(SOURCE_DIR, 'artefa
 
 EXTRANODE_JSON_CONFIG_FILENAME = config('EXTRANODE_JSON_CONFIG_FILENAME', default='extra-node-confs.json')
 
+TARGET_SYSTEM_DEFAULT_GIT_REPOSITORY = config(
+    'TARGET_SYSTEM_DEFAULT_GIT_REPOSITORY', default='gitlab.insight-centre.org/SIT/mps/mps-node.git')
+
 TARGET_COMPOSE_OVERRIDE_FILENAME = config('TARGET_COMPOSE_OVERRIDE_FILENAME', default='docker-compose-override.yml')
 
 TARGET_SYSTEM_JSON_CONFIG_FILENAME = config('TARGET_SYSTEM_JSON_CONFIG_FILENAME', default='ts.json')

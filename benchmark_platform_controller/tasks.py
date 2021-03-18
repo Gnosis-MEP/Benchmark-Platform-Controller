@@ -112,12 +112,17 @@ def execute_benchmark(self, execution_configurations):
     extra_nodes_configs = extra_nodes_configs.get('jetson', {})
 
     sleep_after_target_startup = target_system_confs.get('sleep_after_target_startup')
+    target_system_git_path = target_system_confs.get('git_repository')
     call_kwargs = {}
+    new_env = os.environ.copy()
     if sleep_after_target_startup is not None:
         sleep_after_target_startup = str(int(sleep_after_target_startup))
-        new_env = os.environ.copy()
         new_env['SLEEP_AFTER_TARGET_STARTUP'] = sleep_after_target_startup
-        call_kwargs['env'] = new_env
+
+    if target_system_git_path is not None:
+        new_env['TARGET_SYSTEM_DEFAULT_GIT_REPOSITORY'] = target_system_git_path
+
+    call_kwargs['env'] = new_env
 
     compose_fp = create_override_yaml_file(
         DATA_DIR, TARGET_COMPOSE_OVERRIDE_FILENAME, override_services)

@@ -6,9 +6,8 @@ echo $RESULT_ID
 
 ### prepare local env
 mkdir -p ${DATA_DIR}
-
 cd ${DATA_DIR}
-git clone https://${GITLAB_USER}:${GITLAB_PASS}@gitlab.insight-centre.org/SIT/mps/mps-node.git
+git clone https://${GITLAB_USER}:${GITLAB_PASS}@${TARGET_SYSTEM_DEFAULT_GIT_REPOSITORY}
 cp ${DATA_DIR}/${TARGET_COMPOSE_OVERRIDE_FILENAME} mps-node/${TARGET_COMPOSE_OVERRIDE_FILENAME}
 cp ${DATA_DIR}/${TARGET_SYSTEM_JSON_CONFIG_FILENAME} mps-node/${TARGET_SYSTEM_JSON_CONFIG_FILENAME}
 cp mps-node/example.env mps-node/.env

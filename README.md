@@ -120,7 +120,7 @@ If `override_services` is empty, it will use the specified version as it is.
 
 ### More examples of payload
 
-#### Running bleeding edge version of mps (aka: branch master)
+#### Running bleeding edge version of Gnosis (aka: branch master)
 ```json
 {
     "override_services": {}
@@ -142,7 +142,7 @@ If `override_services` is empty, it will use the specified version as it is.
 }
 ```
 
-#### Adding new services ontop of specific version
+#### Adding new services ontop of specific Gnosis version
 ```json
 {
     "override_services": {
@@ -159,6 +159,16 @@ If `override_services` is empty, it will use the specified version as it is.
     },
     "target_system":{
         "version": "v1.1.0"
+    }
+}
+```
+
+#### Overriding Gnosis git repository
+It is possible to specify a different Gnosis git repository to be used for the benchmark (i.e: a fork of the MPS node project). It is important to remember that all the necessary Gitlab permissions must be configured for the CI user (`GITLAB_USER` and `GITLAB_PASS` configs) in this fork of the project as well. To override the Target System git repository, just provide the `['target_system']['git_repository']` in the payload, the git repository address (http address, without the `http://` part) has to be set as the following: `gitlab.insight-centre.org/SIT/mps/mps-node.git`.
+```json
+{
+    "target_system": {
+        "git_repository": "gitlab.insight-centre.org/SIT/mps/mps-node.git"
     }
 }
 ```
@@ -190,6 +200,7 @@ It is possible to specify a given git tag/branch/commit hash for the benchmark-t
     }
 }
 ```
+
 
 #### Datasets Usage
 This datasets need to be available in the `./datasets` directory, and the `DATASETS_PATH_ON_HOST` env var needs to be configured to the absolute path to this directory in the **HOST** machine.
