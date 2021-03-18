@@ -4,3 +4,4 @@ dist/*
 Dockerfile
 benchmark_platform_controller/*.db
 datasets/*
+.git
