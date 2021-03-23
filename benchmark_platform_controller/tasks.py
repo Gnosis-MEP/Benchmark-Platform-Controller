@@ -102,7 +102,7 @@ def execute_benchmark(self, execution_configurations):
         os.makedirs(DATA_DIR)
     execution_id = self.request.id
     override_services = execution_configurations.get('override_services', {})
-    datasets_confgs = execution_configurations.get('datasets', {})
+    datasets_confgs = execution_configurations.get('datasets', [])
     override_services = setup_datasets_mediaserver_volume_info(datasets_confgs, override_services)
 
     target_system_confs = execution_configurations.get('target_system', {})

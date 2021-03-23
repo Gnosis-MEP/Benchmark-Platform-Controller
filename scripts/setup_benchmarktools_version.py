@@ -10,8 +10,10 @@ def run(config_file_path):
     configs = {}
     with open(config_file_path, 'r') as f:
         configs = json.load(f)
-    if 'benchmark-version' in configs:
-        bm_version = configs.pop('benchmark-version')
+    has_version_override = 'benchmark-version' in configs['benchmark'].keys()
+    if has_version_override:
+        bm_version = configs['benchmark'].pop('benchmark-version')
+        print(f'Changing benchmark version to : {bm_version}')
         subprocess.run(['git', 'checkout', bm_version], cwd=benchmark_tools_dir)
         with open(config_file_path, 'w') as f:
             json.dump(configs, f)
