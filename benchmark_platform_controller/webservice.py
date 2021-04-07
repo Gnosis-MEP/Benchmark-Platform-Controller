@@ -9,8 +9,9 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 from sqlalchemy_utils import database_exists, create_database
 import numpy as np
-import pandas as pd
 
+
+from benchmark_platform_controller.analysis import latency_analysis
 from benchmark_platform_controller.tasks import (
     execute_benchmark,
     stop_benchmark,
@@ -283,9 +284,14 @@ def benchmarks_latency_analysis():
         for key in request.form.keys():
             if 'bm_results_' in key:
                 checked_boxes_ids.append(request.form[key])
-
+        bm_results = db.session.query(ExecutionModel).order_by(ExecutionModel.id.desc())
+        bm_results = filter(lambda r: r.result_id in checked_boxes_ids, bm_results)
+        results_dict = {
+            result.result_id: result.json_results for result in bm_results
+        }
+        plot_json = latency_analysis(results_dict)
         return render_template(
-            'list_benchmarks_for_analysis.html', bm_results=[], evaluation_name=evaluation_name)
+            'show_analysis_result.html', plot_json=plot_json, evaluation_name=evaluation_name)
     else:
         evaluation_name = 'latency'
         bm_valid_results = []
