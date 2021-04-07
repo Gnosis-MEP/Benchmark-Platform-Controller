@@ -18,29 +18,32 @@ def latency_analysis(dict_of_results_json):
 
     x_title = 'Benchmark ID'
     y_title = 'Latency (seconds)'
+    metric_name = 'latency'
+
     # set up data frame
-    source = pd.DataFrame({'benchmark_id': x, 'latency': y, "yerr": yerr})
+    source = pd.DataFrame({'benchmark_id': x, metric_name: y, "yerr": yerr})
 
     # the base chart
     base = alt.Chart(source).transform_calculate(
-        ymin="datum.y-datum.yerr",
-        ymax="datum.y+datum.yerr"
-    )
+        ymin=f"datum.{metric_name}-datum.yerr",
+        ymax=f"datum.{metric_name}+datum.yerr"
+    ).properties(width=300)
 
     # generate the bars
     bars = base.mark_bar(
-        size=30,
+        # size=30,
     ).encode(
         x=alt.X('benchmark_id:O', title=x_title),
-        y=alt.Y('latency:Q', title=y_title)
-    ).interactive()
+        y=alt.Y(f'{metric_name}:Q', title=y_title),
+        color=alt.Color('benchmark_id:O', title=x_title),
+    )
 
     # generate the error bars
     errorbars = base.mark_errorbar().encode(
         x=alt.X('benchmark_id:O', title=x_title),
-        y="ymin:Q",
-        y2="ymax:Q"
-    ).interactive()
+        y=alt.Y('ymin:Q', title=y_title),
+        y2=alt.Y2('ymax:Q', title=y_title)
+    )
 
     chart = bars + errorbars
 
