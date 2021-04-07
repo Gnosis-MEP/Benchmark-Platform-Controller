@@ -24,5 +24,7 @@ matplotlib = "==3.2.2"
 ansible = "==2.10.6"
 ansible-base = "==2.10.5"
 paramiko = "==2.7.2"
+altair = "==4.1.0"
+
 [requires]
 python_version = "3.6"
