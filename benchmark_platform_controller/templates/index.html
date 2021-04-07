@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}List of Benchmarks{% endblock %}
+
+
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row clear-fix">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="header"
+                         style="background-color: #1e4366; color: white; padding: 10px 15px 1px 10px; border: 0px;">
+                        <div>
+                            <b>Benchmark Run Information</b>
+                        </div>
+                    </div>
+                    <div class="body"  style="max-height: 500px;overflow: auto;">
+                        <table class="table table-striped">
+                          <thead>
+                            <tr>
+                              <th scope="col">Task Id</th>
+                              <th scope="col">Status</th>
+                              <th scope="col">Validation</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+
+                                {% for result in bm_results %}
+                                <tr>
+                                    <td>
+                                        <a href=" {{result.url}} ">{{result.id}}</a>
+                                    </td>
+                                    <td>
+                                        {{result.status}}
+                                    </td>
+                                    <td>
+                                        {{result.validation}}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                          </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

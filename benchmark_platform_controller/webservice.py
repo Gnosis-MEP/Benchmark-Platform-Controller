@@ -257,8 +257,12 @@ def list_executions():
     except:
         bm_results = []
     # renderin the base template with requied args.
-    return render_template('base.html', bm_results=bm_results)
+    return render_template('index.html', bm_results=bm_results)
 
+
+@app.route('/analysis/latency', methods=['get'])
+def benchmarks_latency_analysis():
+    return render_template('base.html', bm_results=bm_results)
 
 
 
