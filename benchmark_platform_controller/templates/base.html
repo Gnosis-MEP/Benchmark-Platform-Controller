@@ -1,7 +1,7 @@
 <!--
 Created by - Indeep Singh
 
-Base templae for the hompega for Benchmark Platform Controller. 
+Base templae for the hompega for Benchmark Platform Controller.
 -->
 
 <!DOCTYPE html>
@@ -72,9 +72,7 @@ Base templae for the hompega for Benchmark Platform Controller.
                             <tr>
                               <th scope="col">Task Id</th>
                               <th scope="col">Status</th>
-                              <th scope="col">Latency Average</th>
-                              <th scope="col">Latency Standard Deviation</th>
-                              <th scope="col">Details</th>
+                              <th scope="col">Validation</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -82,50 +80,18 @@ Base templae for the hompega for Benchmark Platform Controller.
                                 {% for result in bm_results %}
                                 <tr>
                                     <td>
-                                        {{result.id}}
+                                        <a href=" {{result.url}} ">{{result.id}}</a>
                                     </td>
                                     <td>
                                         {{result.status}}
                                     </td>
                                     <td>
-                                        {{result.latency_avg}}
-                                    </td>
-                                    <td>
-                                        {{result.latency_std}}
-                                    </td>
-                                    <td>
-                                        <a href=" {{result.url}} ">Details</a>
+                                        {{result.validation}}
                                     </td>
                                 </tr>
                                 {% endfor %}
                           </tbody>
                         </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row clear-fix">
-            <div class="col-lg-6">
-                <div class="card">
-                    <div class="header"
-                         style="background-color: #1e4366; color: white; padding: 10px 15px 1px 10px; border: 0px;">
-                        <div>
-                        </div>
-                    </div>
-                    <div class="body" style="height: 500px">
-                        <img src="{{ imgLatencyAvg }}" style="width: 900px;height: inherit;"/>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="card">
-                    <div class="header"
-                         style="background-color: #1e4366; color: white; padding: 10px 15px 1px 10px; border: 0px;">
-                        <div>
-                        </div>
-                    </div>
-                    <div class="body" style="height: 500px">
-                        <img src="{{ imgLatencyStd }}" style="width: 900px;height: inherit;"/>
                     </div>
                 </div>
             </div>

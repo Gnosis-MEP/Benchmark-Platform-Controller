@@ -229,8 +229,12 @@ def api_list_executions():
 
 ############### end of API
 
+def is_result_valid(result):
+    if result.status != "FINISHED":  # checking if the benchmark run is finished or not.
+        return False
 
-
+    result_passed = result.json_results.get('evaluations', {}).get('passed', False)
+    return result_passed
 
 
 
@@ -240,43 +244,20 @@ def list_executions():
         bm_results = db.session.query(ExecutionModel).order_by(ExecutionModel.id.desc())
         bm_results_with_urls = []
         for result in bm_results:
-            if result.status == "FINISHED":  # checking if the benchmark run is finished or not.
-                latency_eval = result.json_results['evaluations']['benchmark_tools.evaluation.latency_evaluation']
-                obj = {
-                    'id': result.result_id,
-                    'status': result.status,
-                    'latency_avg': latency_eval['latency_avg']['value'],
-                    'latency_std': latency_eval['latency_std']['value'],
-                    'url': url_for('get_result', result_id=result.result_id)
-                }
-            else:  # appending None values for currently running benchmark jobs.
-                obj = {
-                    'id': result.result_id,
-                    'status': result.status,
-                    'url': url_for('get_result', result_id=result.result_id),
-                    'latency_avg': None,
-                    'latency_std': None
-                }
+            obj = {
+                'id': result.result_id,
+                'status': result.status,
+                'url': url_for('get_result', result_id=result.result_id),
+                'validation': is_result_valid(result)
+            }
 
             bm_results_with_urls.append(obj)
 
         bm_results = bm_results_with_urls
-        bm_results_df = pd.DataFrame(bm_results)  # converting dict object to dataframe to use in matplotlib
-        if bm_results_df.empty:  # checking if there is any data in the benchmark db.
-            # path for no preview image when there is no data in becnhmark db
-            imgLatencyAvg = "/static/images/no_preview.jpg"
-            imgLatencyStd = "/static/images/no_preview.jpg"
-        else:
-            bm_results_df = bm_results_df[::-1].reset_index(drop=True)  # reversing the dataframe
-            # generating matplotlib chart for latency avg and returning the path
-            imgLatencyAvg = generateGraphLatencyAvg(bm_results_df['latency_avg'])
-            # generating matplotlib chart for latency std and returning the path
-            imgLatencyStd = generateGraphLatencyStd(bm_results_df['latency_std'])
-
     except:
         bm_results = []
     # renderin the base template with requied args.
-    return render_template('base.html', bm_results=bm_results, imgLatencyAvg=imgLatencyAvg, imgLatencyStd=imgLatencyStd)
+    return render_template('base.html', bm_results=bm_results)
 
 
 
