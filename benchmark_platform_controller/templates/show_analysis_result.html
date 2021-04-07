@@ -1,7 +1,24 @@
 {% extends "base.html" %}
 {% block title %}Showing Benchmarks results for: {{ evaluation_name }}{% endblock %}
+{% block extra_head %}
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
 
-
+<script language="javascript" type="text/javascript>
+  {% autoescape false %}
+    const spec = {{plot_json}};
+  {% endautoescape %}
+  
+  window.onload = function() {
+    alert('Page is loaded');
+    vegaEmbed("#lat_1", spec)
+    // result.view provides access to the Vega View API
+    .then(result => console.log(result))
+    .catch(console.warn);
+  };
+</script>
+{% endblock %}
 
 {% block content %}
     <div class="container-fluid">
@@ -16,7 +33,7 @@
                     </div>
                     <div class="body"  style="max-height: 500px;overflow: auto;">
 
-                        {{ plot_json }}
+                        <div id="lat_1"></div>
                     </div>
                 </div>
             </div>
