@@ -260,9 +260,47 @@ def list_executions():
     return render_template('index.html', bm_results=bm_results)
 
 
-@app.route('/analysis/latency', methods=['get'])
+def filter_results_with_valid_metric(result, evaluation_name):
+    if result.status == "FINISHED":  # checking if the benchmark run is finished or not.
+        evaluation_list = result.json_results.get('evaluations', {})
+        if evaluation_name.lower() == 'latency':
+            evaluation_full_path = 'benchmark_tools.evaluation.latency_evaluation'
+            has_evaluation = evaluation_full_path in evaluation_list.keys()
+            if has_evaluation:
+                evaluation = evaluation_list[evaluation_full_path]
+                has_error = 'error' in evaluation.keys()
+                if has_error is False:
+                    return True
+
+    return False
+
+
+@app.route('/analysis/latency', methods=['get', 'post'])
 def benchmarks_latency_analysis():
-    return render_template('base.html', bm_results=bm_results)
+    if request.method == 'POST':
+        evaluation_name = request.form['evaluation_name']
+        checked_boxes_ids = []
+        for key in request.form.keys():
+            if 'bm_results_' in key:
+                checked_boxes_ids.append(request.form[key])
+
+        return render_template(
+            'list_benchmarks_for_analysis.html', bm_results=[], evaluation_name=evaluation_name)
+    else:
+        evaluation_name = 'latency'
+        bm_valid_results = []
+        try:
+            bm_results = db.session.query(ExecutionModel).order_by(ExecutionModel.id.desc())
+            for result in bm_results:
+                if filter_results_with_valid_metric(result, evaluation_name):
+                    result_obj = {
+                        'id': result.result_id
+                    }
+                    bm_valid_results.append(result_obj)
+        except:
+            pass
+        return render_template(
+            'list_benchmarks_for_analysis.html', bm_results=bm_valid_results, evaluation_name=evaluation_name)
 
 
 
