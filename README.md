@@ -49,7 +49,7 @@ The **result_webhook** variable is currently overrided for each benchmark execut
 More information on how to write this file should be read on the Benchmark Tools docs.
 
 # Runnig with Docker
-First pull all the images:
+First **pull** all the images:
 `docker-compose pull`
 Then, start the containers:
 
