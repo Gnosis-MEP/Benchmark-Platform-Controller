@@ -1,0 +1,5 @@
+---
+- name: testing docker-compose command
+  shell: docker-compose ps
+  args:
+    chdir: "{{ target_system_dest_dir }}"

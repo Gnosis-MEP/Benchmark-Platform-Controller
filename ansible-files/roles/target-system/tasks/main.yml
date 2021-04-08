@@ -13,3 +13,8 @@
   import_tasks: stop.yml
   tags:
     - stop
+
+- name: Import tasks test.yml
+  import_tasks: test.yml
+  tags:
+    - test
