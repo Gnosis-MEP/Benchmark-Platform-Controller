@@ -20,7 +20,7 @@ echo "checking for extra nodes..."
 if [ -f "${DATA_DIR}/${EXTRANODE_JSON_CONFIG_FILENAME}" ]; then
     echo "${DATA_DIR}/${EXTRANODE_JSON_CONFIG_FILENAME} exists. Will setup and start extra node"
     cd ${DIR}/../ansible-files/
-    ansible-playbook -i inventory.ini target-system.yml -e "@${DATA_DIR}/${EXTRANODE_JSON_CONFIG_FILENAME}" -e gitlab_user=${GITLAB_USER} -e gitlab_pass=${GITLAB_PASS} -l extra --tags "setup,start"
+    ansible-playbook -i inventory.ini target-system.yml -e "@${DATA_DIR}/${EXTRANODE_JSON_CONFIG_FILENAME}" -e gitlab_user=${GITLAB_USER} -e gitlab_pass=${GITLAB_PASS} -e target_system_default_git_repository=${TARGET_SYSTEM_DEFAULT_GIT_REPOSITORY} -l jetson --tags "setup,start"
     cd ${DATA_DIR}/mps-node
 else
     echo "${DATA_DIR}/${EXTRANODE_JSON_CONFIG_FILENAME} does not exists."

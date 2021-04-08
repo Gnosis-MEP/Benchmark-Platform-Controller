@@ -9,11 +9,19 @@
     path: "{{ target_system_dest_dir }}"
     state: directory
 
-- name: Retrieve target system into destination directory
+- name: Retrieve default target system into destination directory
   git:
-    repo: "https://{{ gitlab_user | urlencode }}:{{ gitlab_pass | urlencode }}@gitlab.insight-centre.org/SIT/mps/mps-node.git"
+    repo: "https://{{ gitlab_user | urlencode }}:{{ gitlab_pass | urlencode }}@{{ target_system_default_git_repository }}"
     dest: "{{ target_system_dest_dir }}"
     version: "{{ target_system.version }}"
+  when: target_system.git_repository is undefined
+
+- name: Retrieve specific target system into destination directory
+  git:
+    repo: "https://{{ gitlab_user | urlencode }}:{{ gitlab_pass | urlencode }}@{{ target_system.git_repository }}"
+    dest: "{{ target_system_dest_dir }}"
+    version: "{{ target_system.version }}"
+  when: target_system.git_repository is defined
 
 - name: Add docker-compose.override.yml based on template
   template:

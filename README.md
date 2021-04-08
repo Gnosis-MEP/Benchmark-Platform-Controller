@@ -43,10 +43,34 @@ Otherwise if you don't want GPU enabled services, **remove** the variable from t
 Determines how long (seconds) the system should wait after starting up the target system and the benchmark system, respectively.
 This helps ensuring that all services are fully up and running before the benchmark starts it's tasks.
 
+
 # Preparing Benchmark Tools Configurations
 Copy the `example-configs.json` file into a new file called `configs.json` and update it's content to represent what is the default benchmark that will be executed on each run.
 The **result_webhook** variable is currently overrided for each benchmark execution, as such, changing this is not required.
 More information on how to write this file should be read on the Benchmark Tools docs.
+
+## Extra Node Configurations
+If you wish to enable benchmarks that run across multiple nodes (eg: part of the Target system running on one machine, and another part in a second machine), then you need to configure these extra nodes.
+
+For that you need to configure the ansible inventory (copy the `ansible-files/example-inventory.ini` to `ansible-files/inventory.ini` for an example) with a line for the `localhost` and any extra node in another line, example:
+```
+[bm_nodes]
+localhost ansible_connection=local ansible_host=127.0.0.1
+jetson ansible_connection=paramiko ansible_host=192.168.122.217
+<other_node_label> ansible_connection=paramiko ansible_host=<other_node_address>
+```
+
+Next, you'll need to add in all the a new Yaml file on `ansible-files/host_vars` with the name that matches the new node label (as described in the inventory file). Eg for `ansible-files/host_vars/jetson.yml`:
+```
+---
+target_system_dest_dir: /tmp/benchmark
+ansible_python_interpreter: python3.6
+ansible_user: <some user>
+ansible_ssh_pass: <some password>
+```
+
+*PS: For now the only extra node the system accepts is the "jetson". But in the future this will be open to any other possibility.*
+
 
 # Runnig with Docker
 First **pull** all the images:
@@ -218,6 +242,41 @@ This datasets need to be available in the `./datasets` directory, and the `DATAS
 ```
 Any dataset listed in there, will be made available as a VOD (Video On Demand) at the `media-server` on the url `rtmp://<machine_ip>/vod2/<dataset-name>`. Eg: `rtmp://172.17.0.1/vod2/coco2017-val-300x300-30fps.flv`.
 This configuration only makes the dataset videos available, it doesn't configure a publisher for this. To do that one needs to use a custom `benchmark` configuration with the appropriate data to use this dataset (eg: Registering a publisher that uses the VOD url for that dataset).
+
+
+#### Extra Nodes
+To execute the benchmark on an extra node that has been previously configured in the BPC (eg: Jetson), one needs only to update the payload with the the `extra_nodes` key. In this `extra_nodes` dictionary the user must pass in which extra node to use (eg: `jetson`) and what are the configurations for this node. This follows the same pattern as the configurations used for the main node, with the exception of an extra option `start_only_services` that can be used to specify the list (space separated) of services that will be started, otherwise all services from that extra node will be started. It is also important to properly configure the extra node so that it will connect to the main redis and jaeger node.
+
+The example bellow represents a benchmark that starts the main node without running the `object-detection-ssd`, and instead it will run the `object-detection-ssd` in the `jetson` node with it connected to the main node's redis and jaeger (the IP address are just an example, and may not represent the final ones used in production):
+
+```json
+{
+    "target_system":{
+        "version": "v2.1.0"
+    },
+   "override_services": {
+        "object-detection-ssd": {
+            "command": "echo ok"
+        }
+    },
+    "extra_nodes":{
+        "jetson": {
+           "override_services": {
+                "object-detection-ssd": {
+                    "environment": [
+                        "REDIS_ADDRESS=192.168.100.115",
+                        "TRACER_REPORTING_HOST=192.168.100.115",
+                    ]
+                }
+            },
+            "target_system": {
+                "version": "v2.1.0"
+            },
+            "start_only_services": "object-detection-ssd"
+        }
+    }
+}
+```
 
 
 ### Response
