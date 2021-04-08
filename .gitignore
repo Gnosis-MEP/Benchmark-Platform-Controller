@@ -120,6 +120,7 @@ configs.json
 datasets/*
 artefacts/*
 ansible-files/inventory.ini
+ansible-files/host_vars/*
 
 # pycharm folder
 .idea/
