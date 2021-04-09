@@ -26,4 +26,3 @@ ansible-base = "==2.10.5"
 paramiko = "==2.7.2"
 [requires]
 python_version = "3.6"
-altair = "==4.1.0"
