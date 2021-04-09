@@ -256,10 +256,25 @@ def list_executions():
             bm_results_with_urls.append(obj)
 
         bm_results = bm_results_with_urls
+        first_result_id = bm_results[0]['id']
+        first_result_id_json = get_result(first_result_id).json
+        latency_evals = {
+            'status': first_result_id_json['result']["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["passed"],
+            'value': first_result_id_json['result']["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["latency_avg"]["value"]
+        }
+        # throughput_evals = {
+        #     'status': first_result_id_json['result']["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["passed"],
+        #     'value': first_result_id_json['result']["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["latency_avg"]["value"]
+        # }
+        # speed_evals = {
+        #     'status': first_result_id_json['result']["evaluations"]["benchmark_tools.evaluation.per_service_speed_evaluation"]["passed"],
+        #     'value': first_result_id_json['result']["evaluations"]["benchmark_tools.evaluation.per_service_speed_evaluation"]["latency_avg"]["value"]
+        # }
     except:
         bm_results = []
     # renderin the base template with requied args.
-    return render_template('index.html', bm_results=bm_results)
+    return render_template('index.html', bm_results=bm_results, latency_evals = latency_evals)
+    # , throughput_evals = throughput_evals, speed_evals = speed_evals)
 
 
 def filter_results_with_valid_metric(result, evaluation_name):
@@ -292,7 +307,7 @@ def benchmarks_latency_analysis():
         }
         plot_json = latency_analysis(results_dict)
         return render_template(
-            'show_analysis_result.html', plot_json=plot_json, evaluation_name=evaluation_name)
+            'show_analysis_bar.html', plot_json=plot_json, evaluation_name=evaluation_name)
     else:
         evaluation_name = 'latency'
         bm_valid_results = []
@@ -307,7 +322,7 @@ def benchmarks_latency_analysis():
         except:
             pass
         return render_template(
-            'list_benchmarks_for_analysis.html', bm_results=bm_valid_results, evaluation_name=evaluation_name)
+            'latency_analysis.html', bm_results=bm_valid_results, evaluation_name=evaluation_name)
 
 
 

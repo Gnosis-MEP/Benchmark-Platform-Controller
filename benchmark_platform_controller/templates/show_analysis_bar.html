@@ -7,11 +7,11 @@
 
 <script language="javascript" type="text/javascript">
   {% autoescape false %}
-    const spec = {{plot_json}};
+    const spec = {{ plot_json }};
   {% endautoescape %}
 
   window.onload = function() {
-    vegaEmbed("#lat_1", spec)
+    vegaEmbed("#lat", spec)
     // result.view provides access to the Vega View API
     .then(result => console.log(result))
     .catch(console.warn);
@@ -25,14 +25,14 @@
             <div class="col-lg-12">
                 <div class="card">
                     <div class="header"
-                         style="background-color: #1e4366; color: white; padding: 10px 15px 1px 10px; border: 0px;">
+                         style="background-color: #1e4366; color: white;">
                         <div>
-                            <b>Showing Benchmarks results for: {{ evaluation_name }}</b>
+                            <h2 style="color: white;">Showing Benchmarks results for: {{ evaluation_name }}</h2>
                         </div>
                     </div>
                     <div class="body"  style="max-height: 500px;overflow: auto;">
 
-                        <div id="lat_1"></div>
+                        <div id="lat"></div>
                     </div>
                 </div>
             </div>
