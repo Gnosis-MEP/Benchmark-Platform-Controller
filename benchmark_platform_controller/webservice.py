@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import base64
 import io
+import json
 import os
 
 from celery.result import AsyncResult
@@ -9,8 +10,9 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 from sqlalchemy_utils import database_exists, create_database
 import numpy as np
-import pandas as pd
 
+
+from benchmark_platform_controller.analysis import latency_analysis
 from benchmark_platform_controller.tasks import (
     execute_benchmark,
     stop_benchmark,
@@ -254,11 +256,73 @@ def list_executions():
             bm_results_with_urls.append(obj)
 
         bm_results = bm_results_with_urls
+        first_result_id = bm_results[0]['id']
+        first_result_id_json = get_result(first_result_id).json
+        latency_evals = {
+            'status': first_result_id_json['result']["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["passed"],
+            'value': first_result_id_json['result']["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["latency_avg"]["value"]
+        }
+        # throughput_evals = {
+        #     'status': first_result_id_json['result']["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["passed"],
+        #     'value': first_result_id_json['result']["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["latency_avg"]["value"]
+        # }
+        # speed_evals = {
+        #     'status': first_result_id_json['result']["evaluations"]["benchmark_tools.evaluation.per_service_speed_evaluation"]["passed"],
+        #     'value': first_result_id_json['result']["evaluations"]["benchmark_tools.evaluation.per_service_speed_evaluation"]["latency_avg"]["value"]
+        # }
     except:
         bm_results = []
     # renderin the base template with requied args.
-    return render_template('base.html', bm_results=bm_results)
+    return render_template('index.html', bm_results=bm_results, latency_evals = latency_evals)
+    # , throughput_evals = throughput_evals, speed_evals = speed_evals)
 
+
+def filter_results_with_valid_metric(result, evaluation_name):
+    if result.status == "FINISHED":  # checking if the benchmark run is finished or not.
+        evaluation_list = result.json_results.get('evaluations', {})
+        if evaluation_name.lower() == 'latency':
+            evaluation_full_path = 'benchmark_tools.evaluation.latency_evaluation'
+            has_evaluation = evaluation_full_path in evaluation_list.keys()
+            if has_evaluation:
+                evaluation = evaluation_list[evaluation_full_path]
+                has_error = 'error' in evaluation.keys()
+                if has_error is False:
+                    return True
+
+    return False
+
+
+@app.route('/analysis/latency', methods=['get', 'post'])
+def benchmarks_latency_analysis():
+    if request.method == 'POST':
+        evaluation_name = request.form['evaluation_name']
+        checked_boxes_ids = []
+        for key in request.form.keys():
+            if 'bm_results_' in key:
+                checked_boxes_ids.append(request.form[key])
+        bm_results = db.session.query(ExecutionModel).order_by(ExecutionModel.id.desc())
+        bm_results = filter(lambda r: r.result_id in checked_boxes_ids, bm_results)
+        results_dict = {
+            result.result_id: result.json_results for result in bm_results
+        }
+        plot_json = latency_analysis(results_dict)
+        return render_template(
+            'show_analysis_bar.html', plot_json=plot_json, evaluation_name=evaluation_name)
+    else:
+        evaluation_name = 'latency'
+        bm_valid_results = []
+        try:
+            bm_results = db.session.query(ExecutionModel).order_by(ExecutionModel.id.desc())
+            for result in bm_results:
+                if filter_results_with_valid_metric(result, evaluation_name):
+                    result_obj = {
+                        'id': result.result_id
+                    }
+                    bm_valid_results.append(result_obj)
+        except:
+            pass
+        return render_template(
+            'latency_analysis.html', bm_results=bm_valid_results, evaluation_name=evaluation_name)
 
 
 

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Showing Benchmarks results for: {{ evaluation_name }}{% endblock %}
+{% block extra_head %}
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+
+<script language="javascript" type="text/javascript">
+  {% autoescape false %}
+    const spec = {{ plot_json }};
+  {% endautoescape %}
+
+  window.onload = function() {
+    vegaEmbed("#lat", spec)
+    // result.view provides access to the Vega View API
+    .then(result => console.log(result))
+    .catch(console.warn);
+  };
+</script>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row clear-fix">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="header"
+                         style="background-color: #1e4366; color: white;">
+                        <div>
+                            <h2 style="color: white;">Showing Benchmarks results for: {{ evaluation_name }}</h2>
+                        </div>
+                    </div>
+                    <div class="body"  style="max-height: 500px;overflow: auto;">
+
+                        <div id="lat"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
