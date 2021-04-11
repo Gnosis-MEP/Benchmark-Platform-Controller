@@ -48,3 +48,33 @@ def latency_analysis(dict_of_results_json):
     chart = bars + errorbars
 
     return chart.to_json()
+
+
+def throughput_analysis(dict_of_results_json):
+    x = []
+    y = []
+    for result_id, result in dict_of_results_json.items():
+        content = result['evaluations']
+        evaluation = content['benchmark_tools.evaluation.throughput_evaluation']
+        data = pd.DataFrame(evaluation)
+        metric_avg = data['throughput_fps'].value
+        x.append(result_id)
+        y.append(metric_avg)
+
+    x_title = 'Benchmark ID'
+    y_title = 'Throughput (fps)'
+    metric_name = 'throughput'
+
+    # set up data frame
+    source = pd.DataFrame({'benchmark_id': x, metric_name: y})
+
+    # generate the bars
+    chart = alt.Chart(source).mark_bar(
+        # size=30,
+    ).encode(
+        x=alt.X('benchmark_id:O', title=x_title),
+        y=alt.Y(f'{metric_name}:Q', title=y_title),
+        color=alt.Color('benchmark_id:O', title=x_title),
+    ).properties(width=300)
+    
+    return chart.to_json()
