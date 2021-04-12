@@ -12,7 +12,7 @@ from sqlalchemy_utils import database_exists, create_database
 import numpy as np
 
 
-from benchmark_platform_controller.analysis import latency_analysis, throughput_analysis
+from benchmark_platform_controller.analysis import latency_analysis, throughput_analysis, per_service_speed_analysis
 from benchmark_platform_controller.tasks import (
     execute_benchmark,
     stop_benchmark,
@@ -239,6 +239,38 @@ def is_result_valid(result):
     return result_passed
 
 
+def results(first_result_id_json):
+    if ("benchmark_tools.evaluation.latency_evaluation" in first_result_id_json['result']["evaluations"]):
+            latency_evals = {
+                'status': first_result_id_json['result']["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["passed"],
+                'value': first_result_id_json['result']["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["latency_avg"]["value"]
+            }
+    else:
+        latency_evals = {
+            'status': "This evaluation does not exist for the latest iteration",
+            'value': "This evaluation does not exist for the latest iteration"
+        }
+    if ("benchmark_tools.evaluation.throughput_evaluation" in first_result_id_json['result']["evaluations"]):
+        throughput_evals = {
+            'status': first_result_id_json['result']["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["passed"],
+            'value': first_result_id_json['result']["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["throughput_fps"]["value"]
+        }
+    else:
+        throughput_evals = {
+            'status': "This evaluation does not exist for the latest iteration",
+            'value': "This evaluation does not exist for the latest iteration"
+        }
+    if ("benchmark_tools.evaluation.per_service_speed_evaluation" in first_result_id_json['result']["evaluations"]):
+        per_service_speed_evals = {
+            'status': first_result_id_json['result']["evaluations"]["benchmark_tools.evaluation.per_service_speed_evaluation"]["passed"]
+        }
+    else:
+        per_service_speed_evals = {
+            'status': "This evaluation does not exist for the latest iteration"
+        }
+    return latency_evals, throughput_evals, per_service_speed_evals
+
+
 @app.route('/', methods=['get'])
 def list_executions():
     try:
@@ -258,42 +290,12 @@ def list_executions():
         
         first_result_id = bm_results[0]['id']
         first_result_id_json = get_result(first_result_id).json
-        if ("benchmark_tools.evaluation.latency_evaluation" in first_result_id_json['result']["evaluations"]):
-            latency_evals = {
-                'status': first_result_id_json['result']["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["passed"],
-                'value': first_result_id_json['result']["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["latency_avg"]["value"]
-            }
-        else:
-            latency_evals = {
-                'status': "This evaluation does not exist for the latest iteration",
-                'value': "This evaluation does not exist for the latest iteration"
-            }
-        if ("benchmark_tools.evaluation.throughput_evaluation" in first_result_id_json['result']["evaluations"]):
-            throughput_evals = {
-                'status': first_result_id_json['result']["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["passed"],
-                'value': first_result_id_json['result']["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["throughput_fps"]["value"]
-            }
-        else:
-            throughput_evals = {
-                'status': "This evaluation does not exist for the latest iteration",
-                'value': "This evaluation does not exist for the latest iteration"
-            }
-        if ("benchmark_tools.evaluation.per_service_speed_evaluation" in first_result_id_json['result']["evaluations"]):
-            per_service_speed_evals = {
-                'status': first_result_id_json['result']["evaluations"]["benchmark_tools.evaluation.per_service_speed_evaluation"]["passed"],
-                'value': first_result_id_json['result']["evaluations"]["benchmark_tools.evaluation.per_service_speed_evaluation"]["latency_avg"]["value"]
-            }
-        else:
-            per_service_speed_evals = {
-                'status': "This evaluation does not exist for the latest iteration",
-                'value': "This evaluation does not exist for the latest iteration"
-            }
+        latency_evals, throughput_evals, per_service_speed_evals = results(first_result_id_json)
 
     except:
         bm_results = []
     # renderin the base template with requied args.
-    return render_template('index.html', bm_results=bm_results, latency_evals = latency_evals, throughput_evals = throughput_evals
-    , per_service_speed_evals = per_service_speed_evals)
+    return render_template('index.html', bm_results=bm_results, latency_evals = latency_evals, throughput_evals = throughput_evals, per_service_speed_evals = per_service_speed_evals)
 
 
 def filter_results_with_latency(result, evaluation_name):
@@ -390,6 +392,54 @@ def benchmarks_throughput_analysis():
             pass
         return render_template(
             'throughput_analysis.html', bm_results=bm_valid_results, evaluation_name=evaluation_name)
+
+
+def filter_results_with_per_service_speed(result, evaluation_name):
+    if result.status == "FINISHED":  # checking if the benchmark run is finished or not.
+        evaluation_list = result.json_results.get('evaluations', {})
+        if evaluation_name.lower() == 'per_service_speed':
+            evaluation_full_path = 'benchmark_tools.evaluation.per_service_speed_evaluation'
+            has_evaluation = evaluation_full_path in evaluation_list.keys()
+            if has_evaluation:
+                evaluation = evaluation_list[evaluation_full_path]
+                has_error = 'error' in evaluation.keys()
+                if has_error is False:
+                    return True
+
+    return False
+
+
+@app.route('/analysis/per_service_speed', methods=['get', 'post'])
+def benchmarks_per_service_speed_analysis():
+    if request.method == 'POST':
+        evaluation_name = request.form['evaluation_name']
+        checked_boxes_ids = []
+        for key in request.form.keys():
+            if 'bm_results_' in key:
+                checked_boxes_ids.append(request.form[key])
+        bm_results = db.session.query(ExecutionModel).order_by(ExecutionModel.id.desc())
+        bm_results = filter(lambda r: r.result_id in checked_boxes_ids, bm_results)
+        results_dict = {
+            result.result_id: result.json_results for result in bm_results
+        }
+        plot_json = per_service_speed_analysis(results_dict)
+        return render_template(
+            'show_analysis_bar.html', plot_json=plot_json, evaluation_name=evaluation_name)
+    else:
+        evaluation_name = 'per_service_speed'
+        bm_valid_results = []
+        try:
+            bm_results = db.session.query(ExecutionModel).order_by(ExecutionModel.id.desc())
+            for result in bm_results:
+                if filter_results_with_per_service_speed(result, evaluation_name):
+                    result_obj = {
+                        'id': result.result_id
+                    }
+                    bm_valid_results.append(result_obj)
+        except:
+            pass
+        return render_template(
+            'per_service_speed_analysis.html', bm_results=bm_valid_results, evaluation_name=evaluation_name)
 
 
 
