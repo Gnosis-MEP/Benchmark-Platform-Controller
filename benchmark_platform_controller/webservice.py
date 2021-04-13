@@ -12,7 +12,7 @@ from sqlalchemy_utils import database_exists, create_database
 import numpy as np
 
 
-from benchmark_platform_controller.analysis import latency_analysis, throughput_analysis, per_service_speed_analysis
+from benchmark_platform_controller.analysis import latency_analysis, throughput_analysis, per_service_speed_analysis, per_benchmark_analysis, convert_to_csv
 from benchmark_platform_controller.tasks import (
     execute_benchmark,
     stop_benchmark,
@@ -288,7 +288,7 @@ def list_executions():
             obj = {
                 'id': result.result_id,
                 'status': result.status,
-                'url': url_for('get_result', result_id=result.result_id),
+                'url': url_for('per_benchmark_result', id=result.result_id),
                 'validation': is_result_valid(result)
             }
 
@@ -306,6 +306,31 @@ def list_executions():
         bm_results = []
     # renderin the base template with requied args.
     return render_template('index.html', bm_results=bm_results, latency_evals = latency_evals, throughput_evals = throughput_evals, per_service_speed_evals = per_service_speed_evals)
+
+@app.route('/get_result/<string:id>')
+def per_benchmark_result(id):
+    obj = get_result(id).json
+    plot_json = per_benchmark_analysis(obj)
+    rows = convert_to_csv(obj)
+    det_result = {
+        'ID': id,
+        'Benchmark_Passed': obj['result']['evaluations']['passed'],
+        'Query': obj['result']["configs"]["benchmark"]["tasks"][1]["kwargs"]["actions"][0]["query"],
+        'Benchmark_Running_Time': obj['result']["configs"]["benchmark"]["tasks"][1]["kwargs"]["actions"][1]["sleep_time"],
+        'Latency_Evaluation_Passed': obj['result']["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["passed"],
+        'Latency_Value': obj['result']["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["latency_avg"]["value"],
+        'Traces': obj['result']["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["data_points"]["value"],
+        'Throughput_Evaluation_Passed': obj['result']["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["passed"],
+        'Throughput_Value': obj['result']["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["throughput_fps"]["value"],
+        'Per_Service_Speed_Evaluation_Passed':  obj['result']['evaluations']["benchmark_tools.evaluation.per_service_speed_evaluation"]["passed"],
+        'Geolocation': obj['result']["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["geolocation"],
+        'CCTV': obj['result']["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["cctv"],
+        'Color': obj['result']["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["color"],
+        'FPS': obj['result']["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["fps"],
+        'Resolution': obj['result']["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["resolution"],
+        'Color_Channels': obj['result']["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["color_channels"]
+    }
+    return render_template('per_benchmark_result.html', results = det_result, plot_json = plot_json, rows = rows)
 
 
 def filter_results_with_latency(result, evaluation_name):

@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+{% block title %}Detailed Results for Benchmark ID: {{results.ID}}{% endblock %}
+{% block extra_head %}
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+
+    <script language="javascript" type="text/javascript">
+    {% autoescape false %}
+        const spec = {{ plot_json }};
+    {% endautoescape %}
+
+    window.onload = function() {
+        vegaEmbed("#img", spec)
+        // result.view provides access to the Vega View API
+        .then(result => console.log(result))
+        .catch(console.warn);
+    };
+    </script>
+
+    <script language="javascript" type="text/javascript">
+        function downloadCSV(csv, filename) {
+        var csvFile;
+        var downloadLink;
+
+        // CSV file
+        csvFile = new Blob([csv], {type: "text/csv"});
+
+        // Download link
+        downloadLink = document.createElement("a");
+
+        // File name
+        downloadLink.download = filename;
+
+        // Create a link to the file
+        downloadLink.href = window.URL.createObjectURL(csvFile);
+
+        // Hide download link
+        downloadLink.style.display = "none";
+
+        // Add the link to DOM
+        document.body.appendChild(downloadLink);
+
+        // Click download link
+        downloadLink.click();
+    }
+    function exportTableToCSV(filename) {
+        var csv = [];
+        var rows = document.querySelectorAll("table tr");
+        
+        for (var i = 0; i < rows.length; i++) {
+            var row = [], cols = rows[i].querySelectorAll("td, th");
+            
+            for (var j = 0; j < cols.length; j++) 
+                row.push(cols[j].innerText);
+            
+            csv.push(row.join(","));        
+        }
+
+        // Download CSV file
+        downloadCSV(csv.join("\n"), filename);
+    }
+    </script>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row clear-fix">
+            <div class="body" style="margin-left: 20px; margin-top: 5px;">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="thumbnail">
+                            <div class="header" style="background-color: #1e4366; color: white; padding: 10px 15px 1px 10px; border: 0px;">
+                                <div>
+                                    <h4>Results</h4>
+                                </div>
+                            </div>
+                            <div class="caption">
+                                <p>
+                                    <p><b>ID:</b> <br>{{results.ID}}</p>
+                                    <p><b>Benchmark Passed:</b> <br>{{results.Benchmark_Passed}}</p>
+                                </p>
+                            </div>
+                            <div class="header" style="background-color: #1e4366; color: white; padding: 10px 15px 1px 10px; border: 0px;">
+                                <div>
+                                    <h4>Configurations</h4>
+                                </div>
+                            </div>
+                            <div class="caption">
+                                <p>
+                                    <p><b>Query:</b> <br>{{results.Query}}</p>
+                                    <p><b>Benchmark Running Time:</b> <br>{{results.Benchmark_Running_Time}}</p>
+                                    <p><b>Geolocation:</b> <br>{{results.Geolocation}}</p>
+                                    <p><b>CCTV:</b> <br>{{results.CCTV}}</p>
+                                    <p><b>Color:</b> <br>{{results.Color}}</p>
+                                    <p><b>FPS:</b> <br>{{results.FPS}}</p>
+                                    <p><b>Resolution:</b> <br>{{results.Resolution}}</p>
+                                    <p><b>Color Channels:</b> <br>{{results.Color_Channels}}</p>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>    
+            <div class="body" style="margin-left: 20px; margin-top: 5px;">
+                <div class="row">
+                    <div class="col-sm-6 col-md-3">
+                        <div class="thumbnail">
+                            <div class="header" style="background-color: #1e4366; color: white; padding: 10px 15px 1px 10px; border: 0px;">
+                                <div>
+                                    <h4>Latency</h4>
+                                </div>
+                            </div>
+                            <div class="caption">
+                                <p>
+                                    <p><b>Latency Evaluation:</b> <br>{{results.Latency_Evaluation_Passed}}</p>
+                                    <p><b>Latency Value:</b> <br>{{results.Latency_Value}}</p>
+                                    <p><b>Traces:</b><br> {{results.Traces}}</p>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <div class="thumbnail">
+                            <div class="header" style="background-color: #1e4366; color: white; padding: 10px 15px 1px 10px; border: 0px;">
+                                <div>
+                                    <h4>Throughput</h4>
+                                </div>
+                            </div>
+                            <div class="caption">
+                                <p>
+                                    <p><b>Throughput Evaluation:</b> <br>{{results.Throughput_Evaluation_Passed}}</p>
+                                    <p><b>Throughput Value:</b> <br>{{results.Throughput_Value}}</p>
+                                    <br>
+                                    <br>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <div class="thumbnail">
+                            <div class="header" style="background-color: #1e4366; color: white; padding: 10px 15px 1px 10px; border: 0px;">
+                                <div>
+                                    <h4>Per Service Speed</h4>
+                                </div>
+                            </div>
+                            <div class="caption">
+                                <p>
+                                    <p><b>Per Service Speed Evaluation:</b> <br>{{results.Per_Service_Speed_Evaluation_Passed}}</p>
+                                    <p style="visibility: hidden;"><b>Per Service Speed Evaluation:</b> <br>{{results.Per_Service_Speed_Evaluation_Passed}}</p>
+                                    <p style="visibility: hidden;"><b>Per Service Speed Evaluation:</b> <br>{{results.Per_Service_Speed_Evaluation_Passed}}</p>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="body" style="margin-left: 20px; margin-top: 5px;">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="thumbnail">
+                            <div class="header" style="background-color: #1e4366; color: white; padding: 10px 15px 1px 10px; border: 0px;">
+                                <div>
+                                    <h4>Per Service Speed Detailed Evaluation</h4>
+                                </div>
+                            </div>
+                            <div id="img"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="body" style="margin-left: 20px; margin-top: 5px;">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="thumbnail">
+                            <div class="header" style="background-color: #1e4366; color: white; padding: 10px 15px 1px 10px; border: 0px;">
+                                <div>
+                                    <h4>Detailed Results</h4>
+                                    <p>
+                                        <a class="btn btn-primary waves-effect" data-toggle="collapse" data-parent=".accordion" href="#collapseOne"
+                                        style="float: right;">
+                                            Collapse
+                                        </a>
+                                    </p>
+                                    <p>
+                                        <button target="_blank" class="btn btn-primary waves-effect" style="float:inline-start;" 
+                                        onclick="exportTableToCSV('results.csv')">
+                                            Export</button>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="body"  style="max-height: 500px;overflow: auto;">
+                                <div class="panel panel-primary accordion">
+                                    <div id="collapseOne" class="panel-collapse collapse in">
+                                        <div class="panel-body">
+                                            <table class="table table-striped">
+                                                <thead>
+                                                    <tr>
+                                                    <th scope="col">Service</th>
+                                                    <th scope="col">Operation</th>
+                                                    <th scope="col">Type</th>
+                                                    <th scope="col">Value</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for row in rows %}
+                                                        <tr>
+                                                            <td>
+                                                                {{row[0]}}
+                                                            </td>
+                                                            <td>
+                                                                {{row[1]}}
+                                                            </td>
+                                                            <td>
+                                                                {{row[2]}}
+                                                            </td>
+                                                            <td>
+                                                                {{row[3]}}
+                                                            </td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div> 
+                                    </div>
+                                </div> 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,5 +1,6 @@
 import pandas as pd
 import altair as alt
+import json
 
 
 def latency_analysis(dict_of_results_json):
@@ -201,3 +202,75 @@ def per_service_speed_analysis(dict_of_results_json):
     ).interactive()
 
     return chart.to_json()
+
+
+def per_benchmark_analysis(json_file):
+    json_results = json_file['result']['evaluations']['benchmark_tools.evaluation.per_service_speed_evaluation']
+    df = pd.DataFrame(json_results).T
+    df = df['value']
+    df = df[df.index != 'passed']
+    df = df[~df.index.str.contains("std")]	
+
+    source = pd.DataFrame({
+    'Service': df.index,
+    'Speed': df.values
+    })
+
+    chart = alt.Chart(source).mark_bar().encode(
+        x='Service',
+        y='Speed'
+    ).interactive().properties(width = 1710)
+
+    return chart.to_json()
+
+
+def convert_to_csv(json_file):
+    ser = []
+    op = []
+    ty = []
+    val = []
+
+    json_results = json_file['result']['evaluations']['benchmark_tools.evaluation.per_service_speed_evaluation']
+    df_speed = pd.DataFrame(json_results).T
+    val.extend(df_speed.value)
+	
+    for k in range(len(df_speed)):
+        txt = df_speed.index[k]
+        a = txt.split("_")
+        x = " ".join(a[1:-1])
+        ser.append(a[0])
+        op.append(x)
+        ty.append(a[-1])
+
+    json_results = json_file['result']['evaluations']['benchmark_tools.evaluation.latency_evaluation']
+    df_latency = pd.DataFrame(json_results).T
+    val.extend(df_latency.value)
+
+    for k in range(len(df_latency)):
+        txt = df_latency.index[k]
+        a = txt.split("_")
+        x = " ".join(a[1:-1])
+        ser.append(a[0])
+        op.append(x)
+        ty.append(a[-1])
+
+    json_results = json_file['result']['evaluations']['benchmark_tools.evaluation.throughput_evaluation']
+    df_tp = pd.DataFrame(json_results).T
+    val.extend(df_tp.value)
+
+    for k in range(len(df_tp)):
+        txt = df_tp.index[k]
+        a = txt.split("_")
+        x = " ".join(a[1:-1])
+        ser.append(a[0])
+        op.append(x)
+        ty.append(a[-1])
+
+    df = pd.DataFrame({'Service': ser, 'Operation': op, 'Type': ty, 'Value': val})
+    df = df[df.Type != 'std']
+    df = df[df.Service != 'passed']
+    df = df[df.Service != 'data']
+
+    row_data=list(df.values.tolist())
+    
+    return row_data
