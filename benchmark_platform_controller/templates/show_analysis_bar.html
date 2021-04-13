@@ -11,7 +11,7 @@
   {% endautoescape %}
 
   window.onload = function() {
-    vegaEmbed("#lat", spec)
+    vegaEmbed("#img", spec)
     // result.view provides access to the Vega View API
     .then(result => console.log(result))
     .catch(console.warn);
@@ -32,7 +32,7 @@
                     </div>
                     <div class="body"  style="max-height: 500px;overflow: auto;">
 
-                        <div id="lat"></div>
+                        <div id="img"></div>
                     </div>
                 </div>
             </div>
