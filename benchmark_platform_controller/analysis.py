@@ -224,7 +224,7 @@ def per_benchmark_analysis(json_file):
     return chart.to_json()
 
 
-def convert_to_csv(json_file):
+def tabular_view(json_file):
     ser = []
     op = []
     ty = []

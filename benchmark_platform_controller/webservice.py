@@ -12,7 +12,7 @@ from sqlalchemy_utils import database_exists, create_database
 import numpy as np
 
 
-from benchmark_platform_controller.analysis import latency_analysis, throughput_analysis, per_service_speed_analysis, per_benchmark_analysis, convert_to_csv
+from benchmark_platform_controller.analysis import latency_analysis, throughput_analysis, per_service_speed_analysis, per_benchmark_analysis, tabular_view
 from benchmark_platform_controller.tasks import (
     execute_benchmark,
     stop_benchmark,
@@ -288,7 +288,7 @@ def list_executions():
             obj = {
                 'id': result.result_id,
                 'status': result.status,
-                'url': url_for('per_benchmark_result', id=result.result_id),
+                'url': url_for('per_benchmark_result', result_id=result.result_id),
                 'validation': is_result_valid(result)
             }
 
@@ -307,11 +307,11 @@ def list_executions():
     # renderin the base template with requied args.
     return render_template('index.html', bm_results=bm_results, latency_evals = latency_evals, throughput_evals = throughput_evals, per_service_speed_evals = per_service_speed_evals)
 
-@app.route('/get_result/<string:id>')
-def per_benchmark_result(id):
-    obj = get_result(id).json
+@app.route('/get_result/<string:result_id>')
+def per_benchmark_result(result_id):
+    obj = get_result(result_id).json
     plot_json = per_benchmark_analysis(obj)
-    rows = convert_to_csv(obj)
+    rows = tabular_view(obj)
     det_result = {
         'ID': id,
         'Benchmark_Passed': obj['result']['evaluations']['passed'],
