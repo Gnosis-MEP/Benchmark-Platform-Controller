@@ -313,7 +313,7 @@ def per_benchmark_result(result_id):
     plot_json = per_benchmark_analysis(obj)
     rows = tabular_view(obj)
     det_result = {
-        'ID': id,
+        'ID': result_id,
         'Benchmark_Passed': obj['result']['evaluations']['passed'],
         'Query': obj['result']["configs"]["benchmark"]["tasks"][1]["kwargs"]["actions"][0]["query"],
         'Benchmark_Running_Time': obj['result']["configs"]["benchmark"]["tasks"][1]["kwargs"]["actions"][1]["sleep_time"],
