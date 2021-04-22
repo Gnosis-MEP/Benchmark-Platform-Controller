@@ -232,10 +232,10 @@ def is_result_valid(result):
 
 
 def clean_latency_result(json):
-    if ("benchmark_tools.evaluation.latency_evaluation" in json['result']["evaluations"]):
+    if ("benchmark_tools.evaluation.latency_evaluation" in json["evaluations"]):
         latency_evals = {
-            'status': json['result']["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["passed"],
-            'value': json['result']["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["latency_avg"]["value"]
+            'status': json["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["passed"],
+            'value': json["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["latency_avg"]["value"]
         }
     else:
         latency_evals = {
@@ -246,10 +246,10 @@ def clean_latency_result(json):
 
 
 def clean_throughput_result(json):
-    if ("benchmark_tools.evaluation.throughput_evaluation" in json['result']["evaluations"]):
+    if ("benchmark_tools.evaluation.throughput_evaluation" in json["evaluations"]):
         throughput_evals = {
-            'status': json['result']["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["passed"],
-            'value': json['result']["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["throughput_fps"]["value"]
+            'status': json["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["passed"],
+            'value': json["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["throughput_fps"]["value"]
         }
     else:
         throughput_evals = {
@@ -260,9 +260,9 @@ def clean_throughput_result(json):
 
 
 def clean_speed_result(json):
-    if ("benchmark_tools.evaluation.per_service_speed_evaluation" in json['result']["evaluations"]):
+    if ("benchmark_tools.evaluation.per_service_speed_evaluation" in json["evaluations"]):
         per_service_speed_evals = {
-            'status': json['result']["evaluations"]["benchmark_tools.evaluation.per_service_speed_evaluation"]["passed"]
+            'status': json["evaluations"]["benchmark_tools.evaluation.per_service_speed_evaluation"]["passed"]
         }
     else:
         per_service_speed_evals = {
@@ -320,21 +320,21 @@ def per_benchmark_result(result_id):
         rows = tabular_view(obj)
         det_result = {
             'ID': result_id,
-            'Benchmark_Passed': obj['result']['evaluations']['passed'],
-            'Query': obj['result']["configs"]["benchmark"]["tasks"][1]["kwargs"]["actions"][0]["query"],
-            'Benchmark_Running_Time': obj['result']["configs"]["benchmark"]["tasks"][1]["kwargs"]["actions"][1]["sleep_time"],
-            'Latency_Evaluation_Passed': obj['result']["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["passed"],
-            'Latency_Value': obj['result']["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["latency_avg"]["value"],
-            'Traces': obj['result']["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["data_points"]["value"],
-            'Throughput_Evaluation_Passed': obj['result']["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["passed"],
-            'Throughput_Value': obj['result']["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["throughput_fps"]["value"],
-            'Per_Service_Speed_Evaluation_Passed': obj['result']['evaluations']["benchmark_tools.evaluation.per_service_speed_evaluation"]["passed"],
-            'Geolocation': obj['result']["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["geolocation"],
-            'CCTV': obj['result']["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["cctv"],
-            'Color': obj['result']["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["color"],
-            'FPS': obj['result']["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["fps"],
-            'Resolution': obj['result']["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["resolution"],
-            'Color_Channels': obj['result']["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["color_channels"]
+            'Benchmark_Passed': obj['evaluations']['passed'],
+            'Query': obj["configs"]["benchmark"]["tasks"][1]["kwargs"]["actions"][0]["query"],
+            'Benchmark_Running_Time': obj["configs"]["benchmark"]["tasks"][1]["kwargs"]["actions"][1]["sleep_time"],
+            'Latency_Evaluation_Passed': obj["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["passed"],
+            'Latency_Value': obj["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["latency_avg"]["value"],
+            'Traces': obj["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["data_points"]["value"],
+            'Throughput_Evaluation_Passed': obj["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["passed"],
+            'Throughput_Value': obj["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["throughput_fps"]["value"],
+            'Per_Service_Speed_Evaluation_Passed': obj['evaluations']["benchmark_tools.evaluation.per_service_speed_evaluation"]["passed"],
+            'Geolocation': obj["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["geolocation"],
+            'CCTV': obj["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["cctv"],
+            'Color': obj["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["color"],
+            'FPS': obj["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["fps"],
+            'Resolution': obj["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["resolution"],
+            'Color_Channels': obj["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["color_channels"]
         }
     except:
         plot_json = {}
