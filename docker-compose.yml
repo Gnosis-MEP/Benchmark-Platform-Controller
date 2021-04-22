@@ -15,6 +15,7 @@ services:
       - "5432:5432"
 
   benchmark-platform-controller:
+    cpus: 1
     depends_on:
       - tasks-redis
       - db
