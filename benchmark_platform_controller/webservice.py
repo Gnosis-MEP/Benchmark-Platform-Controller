@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import base64
+import copy
 import io
 import json
 import os
@@ -28,6 +29,7 @@ WAIT_BEFORE_ASK_TO_RUN_AGAIN = 10
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ECHO'] = False  # enable this to see sql queries in the terminal
 db.init_app(app)
 
 
@@ -154,15 +156,13 @@ def run_benchmark():
     result_id = None
     execution_configurations = request.json
 
-    # override_services = request.json.get('override_services')
-    # target_system_configs = request.json
     if not get_clear_to_go():
         return make_response(jsonify({'wait': WAIT_BEFORE_ASK_TO_RUN_AGAIN}), 200)
 
-    result = execute_benchmark.delay(execution_configurations)
+    result = execute_benchmark.delay(copy.deepcopy(execution_configurations))
     result_id = result.id
 
-    execution = ExecutionModel(result_id=result_id)
+    execution = ExecutionModel(result_id=result_id, json_payload=execution_configurations)
     db.session.add(execution)
     db.session.commit()
     print(f'inside db: {[e.id for e in db.session.query(ExecutionModel).all()]}')
@@ -233,18 +233,21 @@ def is_result_valid(result):
 
 def get_overall_evaluation_result_summary_or_msg(result, evaluation_name):
     "Specific for the overall evals of latency, throughput and per service op. proc. speed"
+
     evaluation_full_path = f'benchmark_tools.evaluation.{evaluation_name}'
-    evaluations = result.json_results.get('evaluations', {})
     analysis_view = f"benchmarks_{evaluation_name.replace('_evaluation', '')}_analysis"
     detailed_analysis_url = url_for(analysis_view)
-
     summary = {
         'status': 'This evaluation is not present on the latest execution.',
         'eval_name_clean': evaluation_name.replace('_', ' ').capitalize(),
         'detailed_analysis_url': detailed_analysis_url,
     }
 
-    if (evaluation_full_path in evaluations.keys()):
+    if result.json_results is None:
+        return summary
+    evaluations = result.json_results.get('evaluations', {})
+
+    if evaluation_full_path in evaluations.keys():
         evaluation_data = evaluations.get(evaluation_full_path, {})
         summary['status'] = evaluation_data.get('passed', False)
 
@@ -300,6 +303,16 @@ def list_executions():
     return render_template(
         'index.html', bm_results=bm_results, latest_execution_summary=latest_execution_summary
     )
+
+
+# def get_execution_summary(execution):
+#     execution.json_results
+#     queries = execution.json_results
+
+
+# @app.route('/get_result/<string:result_id>')
+# def detailed_benchmark_result(result_id):
+#     execution = get_execution_or_404(result_id)
 
 
 @app.route('/get_result/<string:result_id>')

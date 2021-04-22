@@ -16,7 +16,7 @@ app.app_context().push()
 
 sql_text = """
 ALTER TABLE execution
-ADD artefacts varchar(255) NULL;
+ADD json_payload TEXT NULL;
 """
 sql = text(sql_text)
 result = db.engine.execute(sql)

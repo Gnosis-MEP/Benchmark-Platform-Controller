@@ -22,6 +22,13 @@ class ExecutionModel(db.Model):
     result_id = db.Column(db.String(250), nullable=False)
     shutdown_id = db.Column(db.String(250), nullable=True)
     status = db.Column(db.String(250), default=STATUS_RUNNING)
+    json_payload = db.Column(
+        sqlalchemy_jsonfield.JSONField(
+            enforce_string=True,
+            enforce_unicode=False
+        ),
+        nullable=True
+    )
     json_results = db.Column(
         sqlalchemy_jsonfield.JSONField(
             # MariaDB does not support JSON for now
