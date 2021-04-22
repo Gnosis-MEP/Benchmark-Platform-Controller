@@ -340,14 +340,12 @@ def per_benchmark_result(result_id):
 def filter_results_with_evaluation(result, evaluation_name, evaluation_path):
     if result.status == "FINISHED":  # checking if the benchmark run is finished or not.
         evaluation_list = result.json_results.get('evaluations', {})
-        if evaluation_name.lower() == evaluation_name:
-            evaluation_full_path = evaluation_path
-            has_evaluation = evaluation_full_path in evaluation_list.keys()
-            if has_evaluation:
-                evaluation = evaluation_list[evaluation_full_path]
-                has_error = 'error' in evaluation.keys()
-                if has_error is False:
-                    return True
+        has_evaluation = evaluation_path in evaluation_list.keys()
+        if has_evaluation:
+            evaluation = evaluation_list[evaluation_path]
+            has_error = 'error' in evaluation.keys()
+            if has_error is False:
+                return True
 
     return False
 
