@@ -231,44 +231,49 @@ def is_result_valid(result):
     return result_passed
 
 
-def clean_latency_result(json):
-    if ("benchmark_tools.evaluation.latency_evaluation" in json["evaluations"]):
-        latency_evals = {
-            'status': json["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["passed"],
-            'value': json["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["latency_avg"]["value"]
-        }
-    else:
-        latency_evals = {
-            'status': "This evaluation does not exist for the latest iteration",
-            'value': "This evaluation does not exist for the latest iteration"
-        }
-    return latency_evals
+def get_overall_evaluation_result_summary_or_msg(result, evaluation_name):
+    "Specific for the overall evals of latency, throughput and per service op. proc. speed"
+    evaluation_full_path = f'benchmark_tools.evaluation.{evaluation_name}'
+    evaluations = result.json_results.get('evaluations', {})
+    analysis_view = f"benchmarks_{evaluation_name.replace('_evaluation', '')}_analysis"
+    detailed_analysis_url = url_for(analysis_view)
+
+    summary = {
+        'status': 'This evaluation is not present on the latest execution.',
+        'eval_name_clean': evaluation_name.replace('_', ' ').capitalize(),
+        'detailed_analysis_url': detailed_analysis_url,
+    }
+
+    if (evaluation_full_path in evaluations.keys()):
+        evaluation_data = evaluations.get(evaluation_full_path, {})
+        summary['status'] = evaluation_data.get('passed', False)
+
+        if 'latency_evaluation' in evaluation_full_path:
+            summary['value'] = evaluation_data.get('latency_avg', {}).get('value')
+
+        elif 'throughput_evaluation' in evaluation_full_path:
+            summary['value'] = evaluation_data.get('throughput_fps', {}).get('value')
+
+    return summary
 
 
-def clean_throughput_result(json):
-    if ("benchmark_tools.evaluation.throughput_evaluation" in json["evaluations"]):
-        throughput_evals = {
-            'status': json["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["passed"],
-            'value': json["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["throughput_fps"]["value"]
-        }
-    else:
-        throughput_evals = {
-            'status': "This evaluation does not exist for the latest iteration",
-            'value': "This evaluation does not exist for the latest iteration"
-        }
-    return throughput_evals
-
-
-def clean_speed_result(json):
-    if ("benchmark_tools.evaluation.per_service_speed_evaluation" in json["evaluations"]):
-        per_service_speed_evals = {
-            'status': json["evaluations"]["benchmark_tools.evaluation.per_service_speed_evaluation"]["passed"]
-        }
-    else:
-        per_service_speed_evals = {
-            'status': "This evaluation does not exist for the latest iteration"
-        }
-    return per_service_speed_evals
+def get_latest_execution_results_summary(bm_results):
+    latest_execution_summary = {
+        'latency_evaluation': {},
+        'throughput_evaluation': {},
+        'per_service_speed_evaluation': {},
+    }
+    if len(bm_results) != 0:
+        lastest_execution = bm_results[0]['execution']
+        latest_execution_summary.update({
+            'latency_evaluation': get_overall_evaluation_result_summary_or_msg(
+                lastest_execution, 'latency_evaluation'),
+            'throughput_evaluation': get_overall_evaluation_result_summary_or_msg(
+                lastest_execution, 'throughput_evaluation'),
+            'per_service_speed_evaluation': get_overall_evaluation_result_summary_or_msg(
+                lastest_execution, 'per_service_speed_evaluation'),
+        })
+    return latest_execution_summary
 
 
 @app.route('/', methods=['get'])
@@ -291,22 +296,9 @@ def list_executions():
         bm_results = bm_results_with_urls
     except:
         pass
-
-    latency_evals = []
-    throughput_evals = []
-    per_service_speed_evals = []
-    if len(bm_results) != 0:
-        lastest_execution_json = bm_results[0]['execution'].json_results
-        try:
-            latency_evals = clean_latency_result(lastest_execution_json)
-            throughput_evals = clean_throughput_result(lastest_execution_json)
-            per_service_speed_evals = clean_speed_result(lastest_execution_json)
-        except:
-            pass
-    # renderin the base template with requied args.
+    latest_execution_summary = get_latest_execution_results_summary(bm_results)
     return render_template(
-        'index.html', bm_results=bm_results, latency_evals=latency_evals, throughput_evals=throughput_evals,
-        per_service_speed_evals=per_service_speed_evals
+        'index.html', bm_results=bm_results, latest_execution_summary=latest_execution_summary
     )
 
 
