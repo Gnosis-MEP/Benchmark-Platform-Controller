@@ -46,13 +46,17 @@ def is_execution_finished(execution):
     return finished_all_process
 
 
-@app.route('/api/v1.0/get_result/<string:result_id>', methods=['get'])
-def get_result(result_id):
+def get_execution_or_404(result_id):
     try:
         execution = db.session.query(ExecutionModel).filter_by(result_id=result_id).one()
     except Exception as e:
         abort(404)
-        # raise e
+    return execution
+
+
+@app.route('/api/v1.0/get_result/<string:result_id>', methods=['get'])
+def get_result(result_id):
+    execution = get_execution_or_404(result_id)
 
     result = AsyncResult(id=result_id, app=celery_app)
     result_status = result.status
@@ -70,10 +74,7 @@ def get_result(result_id):
 
 @app.route('/api/v1.0/set_result/<string:result_id>', methods=['post'])
 def set_result(result_id):
-    try:
-        execution = db.session.query(ExecutionModel).filter_by(result_id=result_id).one()
-    except:
-        abort(404)
+    execution = get_execution_or_404(result_id)
 
     if execution.status == execution.STATUS_FINISHED:
         abort(400)
@@ -102,10 +103,7 @@ def mark_execution_as_finished(result_id):
     if not request.json:
         abort(400)
 
-    try:
-        execution = db.session.query(ExecutionModel).filter_by(result_id=result_id).one()
-    except:
-        abort(404)
+    execution = get_execution_or_404(result_id)
 
     if execution.status == execution.STATUS_FINISHED:
         abort(400)
@@ -177,10 +175,7 @@ def set_artefacts(result_id):
     if not request.json:
         abort(400)
 
-    try:
-        execution = db.session.query(ExecutionModel).filter_by(result_id=result_id).one()
-    except:
-        abort(404)
+    execution = get_execution_or_404(result_id)
 
     artefacts = request.json.get('artefacts')
     if artefacts is not None:
@@ -194,10 +189,7 @@ def set_artefacts(result_id):
 
 @app.route('/api/v1.0/get_artefacts/<string:result_id>')
 def get_artefacts(result_id):
-    try:
-        execution = db.session.query(ExecutionModel).filter_by(result_id=result_id).one()
-    except:
-        abort(404)
+    execution = get_execution_or_404(result_id)
 
     if execution.artefacts is None:
         abort(404)
@@ -229,7 +221,7 @@ def api_list_executions():
     return make_response(jsonify(results), 200)
 
 
-############### end of API
+# end of API
 
 def is_result_valid(result):
     if result.status != "FINISHED":  # checking if the benchmark run is finished or not.
@@ -240,11 +232,11 @@ def is_result_valid(result):
 
 
 def clean_latency_result(json):
-    if ("benchmark_tools.evaluation.latency_evaluation" in json['result']["evaluations"]):
-            latency_evals = {
-                'status': json['result']["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["passed"],
-                'value': json['result']["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["latency_avg"]["value"]
-            }
+    if ("benchmark_tools.evaluation.latency_evaluation" in json["evaluations"]):
+        latency_evals = {
+            'status': json["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["passed"],
+            'value': json["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["latency_avg"]["value"]
+        }
     else:
         latency_evals = {
             'status': "This evaluation does not exist for the latest iteration",
@@ -254,10 +246,10 @@ def clean_latency_result(json):
 
 
 def clean_throughput_result(json):
-    if ("benchmark_tools.evaluation.throughput_evaluation" in json['result']["evaluations"]):
+    if ("benchmark_tools.evaluation.throughput_evaluation" in json["evaluations"]):
         throughput_evals = {
-            'status': json['result']["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["passed"],
-            'value': json['result']["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["throughput_fps"]["value"]
+            'status': json["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["passed"],
+            'value': json["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["throughput_fps"]["value"]
         }
     else:
         throughput_evals = {
@@ -268,9 +260,9 @@ def clean_throughput_result(json):
 
 
 def clean_speed_result(json):
-    if ("benchmark_tools.evaluation.per_service_speed_evaluation" in json['result']["evaluations"]):
+    if ("benchmark_tools.evaluation.per_service_speed_evaluation" in json["evaluations"]):
         per_service_speed_evals = {
-            'status': json['result']["evaluations"]["benchmark_tools.evaluation.per_service_speed_evaluation"]["passed"]
+            'status': json["evaluations"]["benchmark_tools.evaluation.per_service_speed_evaluation"]["passed"]
         }
     else:
         per_service_speed_evals = {
@@ -281,6 +273,7 @@ def clean_speed_result(json):
 
 @app.route('/', methods=['get'])
 def list_executions():
+    bm_results = []
     try:
         bm_results = db.session.query(ExecutionModel).order_by(ExecutionModel.id.desc())
         bm_results_with_urls = []
@@ -289,52 +282,66 @@ def list_executions():
                 'id': result.result_id,
                 'status': result.status,
                 'url': url_for('per_benchmark_result', result_id=result.result_id),
-                'validation': is_result_valid(result)
+                'validation': is_result_valid(result),
+                'execution': result,
             }
 
             bm_results_with_urls.append(obj)
 
         bm_results = bm_results_with_urls
-        
-        first_result_id = bm_results[0]['id']
-        first_result_id_json = get_result(first_result_id).json
-        latency_evals = clean_latency_result(first_result_id_json)
-        throughput_evals = clean_throughput_result(first_result_id_json)
-        per_service_speed_evals = clean_speed_result(first_result_id_json)
-
     except:
-        bm_results = []
-        latency_evals = []
-        throughput_evals = []
-        per_service_speed_evals = []
+        pass
+
+    latency_evals = []
+    throughput_evals = []
+    per_service_speed_evals = []
+    if len(bm_results) != 0:
+        lastest_execution_json = bm_results[0]['execution'].json_results
+        try:
+            latency_evals = clean_latency_result(lastest_execution_json)
+            throughput_evals = clean_throughput_result(lastest_execution_json)
+            per_service_speed_evals = clean_speed_result(lastest_execution_json)
+        except:
+            pass
     # renderin the base template with requied args.
-    return render_template('index.html', bm_results=bm_results, latency_evals = latency_evals, throughput_evals = throughput_evals, 
-    per_service_speed_evals = per_service_speed_evals)
+    return render_template(
+        'index.html', bm_results=bm_results, latency_evals=latency_evals, throughput_evals=throughput_evals,
+        per_service_speed_evals=per_service_speed_evals
+    )
+
 
 @app.route('/get_result/<string:result_id>')
 def per_benchmark_result(result_id):
-    obj = get_result(result_id).json
-    plot_json = per_benchmark_analysis(obj)
-    rows = tabular_view(obj)
-    det_result = {
-        'ID': result_id,
-        'Benchmark_Passed': obj['result']['evaluations']['passed'],
-        'Query': obj['result']["configs"]["benchmark"]["tasks"][1]["kwargs"]["actions"][0]["query"],
-        'Benchmark_Running_Time': obj['result']["configs"]["benchmark"]["tasks"][1]["kwargs"]["actions"][1]["sleep_time"],
-        'Latency_Evaluation_Passed': obj['result']["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["passed"],
-        'Latency_Value': obj['result']["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["latency_avg"]["value"],
-        'Traces': obj['result']["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["data_points"]["value"],
-        'Throughput_Evaluation_Passed': obj['result']["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["passed"],
-        'Throughput_Value': obj['result']["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["throughput_fps"]["value"],
-        'Per_Service_Speed_Evaluation_Passed':  obj['result']['evaluations']["benchmark_tools.evaluation.per_service_speed_evaluation"]["passed"],
-        'Geolocation': obj['result']["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["geolocation"],
-        'CCTV': obj['result']["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["cctv"],
-        'Color': obj['result']["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["color"],
-        'FPS': obj['result']["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["fps"],
-        'Resolution': obj['result']["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["resolution"],
-        'Color_Channels': obj['result']["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["color_channels"]
-    }
-    return render_template('per_benchmark_result.html', results = det_result, plot_json = plot_json, rows = rows)
+    execution = get_execution_or_404(result_id)
+
+    obj = execution.json_results
+    try:
+        plot_json = per_benchmark_analysis(obj)
+        rows = tabular_view(obj)
+        det_result = {
+            'ID': result_id,
+            'Benchmark_Passed': obj['evaluations']['passed'],
+            'Query': obj["configs"]["benchmark"]["tasks"][1]["kwargs"]["actions"][0]["query"],
+            'Benchmark_Running_Time': obj["configs"]["benchmark"]["tasks"][1]["kwargs"]["actions"][1]["sleep_time"],
+            'Latency_Evaluation_Passed': obj["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["passed"],
+            'Latency_Value': obj["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["latency_avg"]["value"],
+            'Traces': obj["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["data_points"]["value"],
+            'Throughput_Evaluation_Passed': obj["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["passed"],
+            'Throughput_Value': obj["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["throughput_fps"]["value"],
+            'Per_Service_Speed_Evaluation_Passed': obj['evaluations']["benchmark_tools.evaluation.per_service_speed_evaluation"]["passed"],
+            'Geolocation': obj["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["geolocation"],
+            'CCTV': obj["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["cctv"],
+            'Color': obj["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["color"],
+            'FPS': obj["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["fps"],
+            'Resolution': obj["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["resolution"],
+            'Color_Channels': obj["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["color_channels"]
+        }
+    except:
+        plot_json = {}
+        rows = []
+        det_result = {}
+
+    return render_template('per_benchmark_result.html', results=det_result, plot_json=plot_json, rows=rows)
 
 
 def filter_results_with_evaluation(result, evaluation_name, evaluation_path):
@@ -450,61 +457,6 @@ def benchmarks_per_service_speed_analysis():
             pass
         return render_template(
             'per_service_speed_analysis.html', bm_results=bm_valid_results, evaluation_name=evaluation_name)
-
-
-
-# Created 2 private methods for generating matplotlib charts.
-# Since, in future we might change the type of charts for latency average and latency standard deviation.
-# Thats why we have cretaed 2 separate methods to exclude the dependency.
-
-def generateGraphLatencyAvg(latency_avg):
-    latency_avg_mean = [np.mean(latency_avg)]  # calculating the mean of the latency average values
-
-    # matplotlib code
-    fig = Figure()
-    axis = fig.add_subplot(1, 1, 1)
-    axis.set_title("Benchmark Evaluation : Latency Average ")
-    axis.set_xlabel("Benchmark Run")
-    axis.set_ylabel("Latency Average ")
-    axis.yaxis.grid()  # adding horizontal grid lines
-    axis.set_xticks([])  # removing the x-axis ticks
-    axis.plot(latency_avg, "ro-")
-    axis.axhline(y=latency_avg_mean, color='blue', linestyle="--", label="Mean")  # adding the mean line.
-    axis.legend(loc="upper right")  # setting the legen position.
-
-    # matplotlib to PNG image
-    pngImg = io.BytesIO()
-    FigureCanvas(fig).print_png(pngImg)
-
-    # png image to its base64 conversion.
-    pngImgB64 = "data:image/png;base64,"
-    pngImgB64 += base64.b64encode(pngImg.getvalue()).decode('utf8')
-    return pngImgB64
-
-
-def generateGraphLatencyStd(latency_std):
-    latency_std_mean = [np.mean(latency_std)]
-
-    # matplot lib code
-    fig = Figure()
-    axis = fig.add_subplot(1, 1, 1)  # adding subplot region.
-    axis.set_title("Benchmark Evaluation : Latency Standard Deviation ")
-    axis.set_xlabel("Benchmark Run")
-    axis.set_ylabel("Latency Standard Deviation ")
-    axis.yaxis.grid()  # adding horizontal grid lines
-    axis.set_xticks([])  # removing the x-axis ticks
-    axis.plot(latency_std, "ro-")
-    axis.axhline(y=latency_std_mean, color='blue', linestyle="--", label="Mean")
-    axis.legend(loc="upper right")  # setting the legen position.
-
-    # matplotlib to PNG image
-    pngImg = io.BytesIO()
-    FigureCanvas(fig).print_png(pngImg)
-
-    # png image to its base64 conversion.
-    pngImgB64 = "data:image/png;base64,"
-    pngImgB64 += base64.b64encode(pngImg.getvalue()).decode('utf8')
-    return pngImgB64
 
 
 def database_is_empty():

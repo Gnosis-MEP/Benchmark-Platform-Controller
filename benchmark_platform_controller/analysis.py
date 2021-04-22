@@ -77,7 +77,7 @@ def throughput_analysis(dict_of_results_json):
         y=alt.Y(f'{metric_name}:Q', title=y_title),
         color=alt.Color('benchmark_id:O', title=x_title),
     ).properties(width=300)
-    
+
     return chart.to_json()
 
 def per_service_speed_analysis(dict_of_results_json):
@@ -103,7 +103,7 @@ def per_service_speed_analysis(dict_of_results_json):
     y_title = 'Benchmark ID'
     x_title = 'Per Service Speed'
     metric_name = 'per_service_speed'
-    
+
     for result_id, result in dict_of_results_json.items():
         content = result['evaluations']
         evaluation = content['benchmark_tools.evaluation.per_service_speed_evaluation']
@@ -176,8 +176,8 @@ def per_service_speed_analysis(dict_of_results_json):
     df_Preprocessing = pd.DataFrame(pr)
     df_QueryPlanner = pd.DataFrame(qp)
     df_NamespaceMapper = pd.DataFrame(nm)
-    df_final = pd.concat([df_AdaptationAnalyser, df_AdaptationPlanner, df_ClientManager, df_QueryManager, df_OutputGenerator, 
-                df_Matcher, df_AdaptationMonitor, df_Forwarder, df_EventDispatcher, df_PPEDetectionService, df_WindowManager, 
+    df_final = pd.concat([df_AdaptationAnalyser, df_AdaptationPlanner, df_ClientManager, df_QueryManager, df_OutputGenerator,
+                df_Matcher, df_AdaptationMonitor, df_Forwarder, df_EventDispatcher, df_PPEDetectionService, df_WindowManager,
                 df_Scheduler, df_AdaptationKnowledge, df_Preprocessing, df_QueryPlanner, df_NamespaceMapper])
     df_final = df_final["value"].to_frame()
     index = df_final.index.tolist()
@@ -205,11 +205,11 @@ def per_service_speed_analysis(dict_of_results_json):
 
 
 def per_benchmark_analysis(json_file):
-    json_results = json_file['result']['evaluations']['benchmark_tools.evaluation.per_service_speed_evaluation']
+    json_results = json_file['evaluations']['benchmark_tools.evaluation.per_service_speed_evaluation']
     df = pd.DataFrame(json_results).T
     df = df['value']
     df = df[df.index != 'passed']
-    df = df[~df.index.str.contains("std")]	
+    df = df[~df.index.str.contains("std")]
 
     source = pd.DataFrame({
     'Service': df.index,
@@ -230,10 +230,10 @@ def tabular_view(json_file):
     ty = []
     val = []
 
-    json_results = json_file['result']['evaluations']['benchmark_tools.evaluation.per_service_speed_evaluation']
+    json_results = json_file['evaluations']['benchmark_tools.evaluation.per_service_speed_evaluation']
     df_speed = pd.DataFrame(json_results).T
     val.extend(df_speed.value)
-	
+
     for k in range(len(df_speed)):
         txt = df_speed.index[k]
         a = txt.split("_")
@@ -242,7 +242,7 @@ def tabular_view(json_file):
         op.append(x)
         ty.append(a[-1])
 
-    json_results = json_file['result']['evaluations']['benchmark_tools.evaluation.latency_evaluation']
+    json_results = json_file['evaluations']['benchmark_tools.evaluation.latency_evaluation']
     df_latency = pd.DataFrame(json_results).T
     val.extend(df_latency.value)
 
@@ -254,7 +254,7 @@ def tabular_view(json_file):
         op.append(x)
         ty.append(a[-1])
 
-    json_results = json_file['result']['evaluations']['benchmark_tools.evaluation.throughput_evaluation']
+    json_results = json_file['evaluations']['benchmark_tools.evaluation.throughput_evaluation']
     df_tp = pd.DataFrame(json_results).T
     val.extend(df_tp.value)
 
@@ -272,5 +272,5 @@ def tabular_view(json_file):
     df = df[df.Service != 'data']
 
     row_data=list(df.values.tolist())
-    
+
     return row_data
