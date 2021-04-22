@@ -304,8 +304,12 @@ def list_executions():
 
     except:
         bm_results = []
+        latency_evals = []
+        throughput_evals = []
+        per_service_speed_evals = []
     # renderin the base template with requied args.
-    return render_template('index.html', bm_results=bm_results, latency_evals = latency_evals, throughput_evals = throughput_evals, per_service_speed_evals = per_service_speed_evals)
+    return render_template('index.html', bm_results=bm_results, latency_evals = latency_evals, throughput_evals = throughput_evals, 
+    per_service_speed_evals = per_service_speed_evals)
 
 @app.route('/get_result/<string:result_id>')
 def per_benchmark_result(result_id):
@@ -333,17 +337,15 @@ def per_benchmark_result(result_id):
     return render_template('per_benchmark_result.html', results = det_result, plot_json = plot_json, rows = rows)
 
 
-def filter_results_with_latency(result, evaluation_name):
+def filter_results_with_evaluation(result, evaluation_name, evaluation_path):
     if result.status == "FINISHED":  # checking if the benchmark run is finished or not.
         evaluation_list = result.json_results.get('evaluations', {})
-        if evaluation_name.lower() == 'latency':
-            evaluation_full_path = 'benchmark_tools.evaluation.latency_evaluation'
-            has_evaluation = evaluation_full_path in evaluation_list.keys()
-            if has_evaluation:
-                evaluation = evaluation_list[evaluation_full_path]
-                has_error = 'error' in evaluation.keys()
-                if has_error is False:
-                    return True
+        has_evaluation = evaluation_path in evaluation_list.keys()
+        if has_evaluation:
+            evaluation = evaluation_list[evaluation_path]
+            has_error = 'error' in evaluation.keys()
+            if has_error is False:
+                return True
 
     return False
 
@@ -366,11 +368,12 @@ def benchmarks_latency_analysis():
             'show_analysis_bar.html', plot_json=plot_json, evaluation_name=evaluation_name)
     else:
         evaluation_name = 'latency'
+        evaluation_path = 'benchmark_tools.evaluation.latency_evaluation'
         bm_valid_results = []
         try:
             bm_results = db.session.query(ExecutionModel).order_by(ExecutionModel.id.desc())
             for result in bm_results:
-                if filter_results_with_latency(result, evaluation_name):
+                if filter_results_with_evaluation(result, evaluation_name, evaluation_path):
                     result_obj = {
                         'id': result.result_id
                     }
@@ -379,21 +382,6 @@ def benchmarks_latency_analysis():
             pass
         return render_template(
             'latency_analysis.html', bm_results=bm_valid_results, evaluation_name=evaluation_name)
-
-
-def filter_results_with_throughput(result, evaluation_name):
-    if result.status == "FINISHED":  # checking if the benchmark run is finished or not.
-        evaluation_list = result.json_results.get('evaluations', {})
-        if evaluation_name.lower() == 'throughput':
-            evaluation_full_path = 'benchmark_tools.evaluation.throughput_evaluation'
-            has_evaluation = evaluation_full_path in evaluation_list.keys()
-            if has_evaluation:
-                evaluation = evaluation_list[evaluation_full_path]
-                has_error = 'error' in evaluation.keys()
-                if has_error is False:
-                    return True
-
-    return False
 
 
 @app.route('/analysis/throughput', methods=['get', 'post'])
@@ -414,11 +402,12 @@ def benchmarks_throughput_analysis():
             'show_analysis_bar.html', plot_json=plot_json, evaluation_name=evaluation_name)
     else:
         evaluation_name = 'throughput'
+        evaluation_path = 'benchmark_tools.evaluation.throughput_evaluation'
         bm_valid_results = []
         try:
             bm_results = db.session.query(ExecutionModel).order_by(ExecutionModel.id.desc())
             for result in bm_results:
-                if filter_results_with_throughput(result, evaluation_name):
+                if filter_results_with_evaluation(result, evaluation_name, evaluation_path):
                     result_obj = {
                         'id': result.result_id
                     }
@@ -427,21 +416,6 @@ def benchmarks_throughput_analysis():
             pass
         return render_template(
             'throughput_analysis.html', bm_results=bm_valid_results, evaluation_name=evaluation_name)
-
-
-def filter_results_with_per_service_speed(result, evaluation_name):
-    if result.status == "FINISHED":  # checking if the benchmark run is finished or not.
-        evaluation_list = result.json_results.get('evaluations', {})
-        if evaluation_name.lower() == 'per_service_speed':
-            evaluation_full_path = 'benchmark_tools.evaluation.per_service_speed_evaluation'
-            has_evaluation = evaluation_full_path in evaluation_list.keys()
-            if has_evaluation:
-                evaluation = evaluation_list[evaluation_full_path]
-                has_error = 'error' in evaluation.keys()
-                if has_error is False:
-                    return True
-
-    return False
 
 
 @app.route('/analysis/per_service_speed', methods=['get', 'post'])
@@ -462,11 +436,12 @@ def benchmarks_per_service_speed_analysis():
             'show_analysis_bar.html', plot_json=plot_json, evaluation_name=evaluation_name)
     else:
         evaluation_name = 'per_service_speed'
+        evaluation_path = 'benchmark_tools.evaluation.per_service_speed_evaluation'
         bm_valid_results = []
         try:
             bm_results = db.session.query(ExecutionModel).order_by(ExecutionModel.id.desc())
             for result in bm_results:
-                if filter_results_with_per_service_speed(result, evaluation_name):
+                if filter_results_with_evaluation(result, evaluation_name, evaluation_path):
                     result_obj = {
                         'id': result.result_id
                     }
@@ -475,8 +450,6 @@ def benchmarks_per_service_speed_analysis():
             pass
         return render_template(
             'per_service_speed_analysis.html', bm_results=bm_valid_results, evaluation_name=evaluation_name)
-
-
 
 
 
