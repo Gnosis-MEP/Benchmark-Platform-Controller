@@ -1,0 +1,43 @@
+{% set collapse_id = 'mainConf' -%}
+{% set collapse_default = false -%}
+
+{% extends "execution_detail/base_element_summary_table.html" %}
+
+{% block element_summary_title %}Main Configurations{% endblock %}
+
+{% block element_table_header %}
+          <th><p style="text-align: center;">Target System Version</p></th>
+          <th><p style="text-align: center;">Target System Repository</p></th>
+          <th><p style="text-align: center;">Sleep After Start-Up<t/p></th>
+          <th><p style="text-align: center;">Benchmark Tools Version</p></th>
+          <th><p style="text-align: center;">Validation Status</p></th>
+
+{% endblock %}
+
+{% block element_table_body %}
+
+            {% if json_payload is not none %}
+                {% set target_system_version = json_payload.get('target_system', {}).get('version', 'Default') -%}
+                {% set target_system_repo = json_payload.get('target_system', {}).get('git_repository', 'Default') -%}
+                {% set sleep_after_target_startup = json_payload.get('target_system', {}).get('sleep_after_target_startup', 'Default') -%}
+                {% set bm_tools_version = json_payload.get('benchmark', {}).get('benchmark-version', 'Default') -%}
+                {% set validation = json_results.get('evaluations', {}).get('passed', false) -%}
+                <tr>
+                    <td >
+                        <p style="text-align: center;">{{ target_system_version }}</p>
+                    </td>
+                    <td >
+                        <p style="text-align: center;">{{ target_system_repo }}</p>
+                    </td>
+                    <td >
+                        <p style="text-align: center;">{{ sleep_after_target_startup }}</p>
+                    </td>
+                    <td >
+                        <p style="text-align: center;">{{ bm_tools_version }}</p>
+                    </td>
+                    <td >
+                        <p style="text-align: center;">{% if validation %}Passed{% else %}Not Passed{% endif %}</p>
+                    </td>
+                </tr>
+            {% endif %}
+{% endblock %}

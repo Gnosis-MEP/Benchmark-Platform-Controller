@@ -44,7 +44,7 @@ Base templae for the hompega for Benchmark Platform Controller.
     </div>
     <div class="container-fluid" style="background-color: #00a7a9;">
         <div class="navbar-header" style="float: left;height: 85px;">
-            <h1 style="text-align:left;float:left;color:white;">Gnosis:</h1>
+            <h1 style="text-align:left;float:left;color:white;"><a href="{{ url_for('list_executions') }}" style="color:white;">Gnosis:</a></h1>
             &nbsp;&nbsp;&nbsp;<h3
                 style="padding: 10px 0px;text-align:right;float:right;color:white;">Multimedia Event Processing &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Benchmark Dashboard</h3>
         </div>
@@ -83,5 +83,12 @@ Base templae for the hompega for Benchmark Platform Controller.
 
 <!-- Demo Js -->
 <script src="./js/demo.js"></script>
+
+<script>
+    window.onload = function() {
+        {% block on_page_load_js %}
+        {% endblock %}
+    };
+</script>
 </body>
 </html>

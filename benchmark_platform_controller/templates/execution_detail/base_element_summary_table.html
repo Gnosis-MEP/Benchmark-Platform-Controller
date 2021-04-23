@@ -1,0 +1,30 @@
+<div class="header"
+     style="background-color: #1e4366; color: white; padding: 10px 15px 1px 10px; border: 0px;">
+    <div>
+        <h4>{% block element_summary_title %}{% endblock %}</h4>
+        <p>
+            <a class="btn btn-primary waves-effect" data-toggle="collapse" data-parent=".accordion" href="#{{ collapse_id }}">
+                Collapse
+            </a>
+        </p>
+    </div>
+</div>
+<div class="body"  style="max-height: 500px;overflow: auto;">
+    <div id="{{ collapse_id }}" class="panel-collapse collapse{% if collapse_default is defined and collapse_default is false %} in{% endif %}">
+
+        <table class="table table-striped">
+          <thead>
+            <tr >
+                {% block element_table_header %}
+              {% endblock %}
+            </tr>
+          </thead>
+          <tbody>
+
+            {% block element_table_body %}
+            {% endblock %}
+
+          </tbody>
+        </table>
+    </div>
+</div>

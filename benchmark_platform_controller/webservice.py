@@ -289,7 +289,7 @@ def list_executions():
             obj = {
                 'id': result.result_id,
                 'status': result.status,
-                'url': url_for('per_benchmark_result', result_id=result.result_id),
+                'url': url_for('detailed_benchmark_result', result_id=result.result_id),
                 'validation': is_result_valid(result),
                 'execution': result,
             }
@@ -299,20 +299,22 @@ def list_executions():
         bm_results = bm_results_with_urls
     except:
         pass
+
     latest_execution_summary = get_latest_execution_results_summary(bm_results)
     return render_template(
         'index.html', bm_results=bm_results, latest_execution_summary=latest_execution_summary
     )
 
 
-# def get_execution_summary(execution):
-#     execution.json_results
-#     queries = execution.json_results
+@app.route('/execution/<string:result_id>')
+def detailed_benchmark_result(result_id):
+    execution = get_execution_or_404(result_id)
+    json_results = execution.json_results or {}
+    json_payload = execution.json_payload or {}
 
-
-# @app.route('/get_result/<string:result_id>')
-# def detailed_benchmark_result(result_id):
-#     execution = get_execution_or_404(result_id)
+    return render_template(
+        'execution_detail/benchmark_summary.html',
+        execution=execution, json_results=json_results, json_payload=json_payload)
 
 
 @app.route('/get_result/<string:result_id>')

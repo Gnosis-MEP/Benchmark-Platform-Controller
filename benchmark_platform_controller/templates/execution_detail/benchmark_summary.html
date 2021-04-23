@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Details of Benchmark ID: {{ execution.result_id }}{% endblock %}
+{% block content %}
+
+    <div class="container-fluid">
+        <div class="row clearfix">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class="card">
+                    <div class="header" style="background-color: #1e4366; color: white; ">
+                        <h3 style="color: white;">
+                            Configuration Summary for Benchmark: {{ execution.result_id }}
+                        </h3>
+                    </div>
+
+                    <div class="card">
+                        {% include "execution_detail/main_conf_summary.html" %}
+                    </div>
+                    {% if 'override_services' in json_payload.keys() %}
+
+                    <div class="card">
+                        {% with %}
+                        {% include "execution_detail/override_services_conf_summary.html" %}
+                        {% endwith %}
+                    </div>
+                    {% endif %}
+                    <div class="card">
+                        {% include "execution_detail/tasks_conf_summary.html" %}
+                    </div>
+
+                    <div class="card">
+                        {% include "execution_detail/evaluations_conf_summary.html" %}
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+
+{% block on_page_load_js %}
+    $(function () {
+      $('[data-toggle="tooltip"]').tooltip()
+    })
+{% endblock %}

@@ -1,0 +1,45 @@
+{% set collapse_id = 'overrideServices' -%}
+{% extends "execution_detail/base_element_summary_table.html" %}
+
+{% block element_summary_title %}Override Services Configurations{% endblock %}
+
+{% block element_table_header %}
+          <th ><p style="text-align: center;">Service</p></th>
+          <th ><p style="text-align: center;">Image</p></th>
+          <th ><p style="text-align: center;">Command</p></th>
+          <th ><p style="text-align: center;">Environment Vars</p></th>
+{% endblock %}
+
+{% block element_table_body %}
+
+            {% for service_name, service_confs in json_payload.get('override_services', {}).items() %}
+                {% set service_image = service_confs.get('image', 'Default') -%}
+                {% set service_command = service_confs.get('command', 'Default') -%}
+                {% set service_environment = service_confs.get('environment', []) -%}
+
+                <tr>
+                    <td >
+                        <p style="text-align: center;">{{ service_name }}</p>
+                    </td>
+                    <td >
+                        <p style="text-align: center;">{{ service_image }}</p>
+                    </td>
+                    <td >
+                        <p style="text-align: center;">{{ service_command }}</p>
+                    </td>
+                    <td >
+                            {% if not service_environment %}
+                            <p style="text-align: center;">
+                                Default
+                            </p>
+                            {% else %}
+                                <ul style="text-align: center; list-style-type: none;">
+                                {% for env_override in service_environment %}
+                                    <li style="text-align: center;">{{ env_override }}</li>
+                                {% endfor %}
+                                </ul>
+                            {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+{% endblock %}
