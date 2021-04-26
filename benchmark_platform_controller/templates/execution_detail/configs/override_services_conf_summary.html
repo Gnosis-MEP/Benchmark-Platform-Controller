@@ -8,14 +8,15 @@
           <th ><p style="text-align: left; padding: 10px;">Image</p></th>
           <th ><p style="text-align: left; padding: 10px;">Command</p></th>
           <th ><p style="text-align: left; padding: 10px;">Environment Vars</p></th>
+          <th ><p style="text-align: left; padding: 10px;">Other Configs</p></th>
 {% endblock %}
 
 {% block element_table_body %}
 
             {% for service_name, service_confs in json_payload.get('override_services', {}).items() %}
-                {% set service_image = service_confs.get('image', 'Default') -%}
-                {% set service_command = service_confs.get('command', 'Default') -%}
-                {% set service_environment = service_confs.get('environment', []) -%}
+                {% set service_image = service_confs.pop('image', 'Default') -%}
+                {% set service_command = service_confs.pop('command', 'Default') -%}
+                {% set service_environment = service_confs.pop('environment', []) -%}
 
                 <tr>
                     <td >
@@ -39,6 +40,17 @@
                                 {% endfor %}
                                 </ul>
                             {% endif %}
+                    </td>
+                    <td >
+                        {% if not service_confs.keys() %}
+                            <p style="text-align: left; padding: 10px;">Default</p>
+                        {% else %}
+                                <ul style="text-align: left;  list-style-type: none; padding: 10px;">
+                                {% for override_conf, override_value in service_confs.items() %}
+                                    <li style="text-align: left; ">{{override_conf}}: {{ override_value }}</li>
+                                {% endfor %}
+                                </ul>
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}
