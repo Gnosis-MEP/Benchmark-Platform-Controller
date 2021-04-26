@@ -1,19 +1,14 @@
 #!/usr/bin/env python
-import base64
 import copy
-import io
-import json
 import os
 
 from celery.result import AsyncResult
 from flask import Flask, request, jsonify, make_response, abort, url_for, render_template, send_file
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-from matplotlib.figure import Figure
 from sqlalchemy_utils import database_exists, create_database
-import numpy as np
 
 
-from benchmark_platform_controller.analysis import latency_analysis, throughput_analysis, per_service_speed_analysis, per_benchmark_analysis, tabular_view
+from benchmark_platform_controller.analysis import (
+    latency_analysis, throughput_analysis, per_service_speed_analysis, per_benchmark_analysis, tabular_view)
 from benchmark_platform_controller.tasks import (
     execute_benchmark,
     stop_benchmark,
