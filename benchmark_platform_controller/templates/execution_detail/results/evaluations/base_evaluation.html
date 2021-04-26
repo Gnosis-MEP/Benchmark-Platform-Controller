@@ -18,6 +18,7 @@
 {% block element_table_body %}
 
     {% for metric_name, metric_dict in evaluation.items() %}
+        {% set metric_value = metric_dict.get('value') -%}
     <tr>
         <td>
             <p style="text-align: left; padding: 10px;">
@@ -27,7 +28,11 @@
 
         <td>
             <p style="text-align: left; padding: 10px;">
-                {{ "%.6f"|format(metric_dict.get('value')|float) }}
+                {% if metric_value is number %}
+                    {{ "%.6f"|format(metric_value|float) }}
+                {% else %}
+                    {{ metric_value }}
+                {% endif %}
             </p>
         </td>
         <td>
