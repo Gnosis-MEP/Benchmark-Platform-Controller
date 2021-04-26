@@ -5,9 +5,9 @@
 {% block element_summary_title %}Tasks Configurations{% endblock %}
 
 {% block element_table_header %}
-          <th style="width: 10%"><p style="text-align: center;">Execution Order</p></th>
-          <th style="width: 45%"><p style="text-align: center;">Action</p></th>
-          <th style="width: 45%"><p style="text-align: center;">Task Module</p></th>
+          <th style="width: 10%"><p style="text-align: left; padding: 10px;">Execution Order</p></th>
+          <th style="width: 45%"><p style="text-align: left; padding: 10px;">Action</p></th>
+          <th style="width: 45%"><p style="text-align: left; padding: 10px;">Task Module</p></th>
 {% endblock %}
 
 {% block element_table_body %}
@@ -23,10 +23,10 @@
                     <tr>
 
                         <td style="width: 10%">
-                            <p style="text-align: center;">{{ task_actions_count|length }}</p>
+                            <p style="text-align: left; padding: 10px;">{{ task_actions_count|length }}</p>
                         </td>
                         <td style="width: 45%">
-                            <p style="text-align: center;">
+                            <p style="text-align: left; padding: 10px;">
                             {% set kwarg_dict = action -%}
                             {% set kwarg_button_text = action_type -%}
                             {% include "execution_detail/_summary_kwargs_on_tooltip.html" %}
@@ -34,7 +34,7 @@
                         </td>
 
                         <td style="width: 45%">
-                            <p style="text-align: center;">
+                            <p style="text-align: left; padding: 10px;">
                             {% set kwarg_dict = task.get('kwargs', {}) -%}
                             {% set kwarg_button_text = task.get('module', '.').split(".")[-1]  -%}
                             {% include "execution_detail/_summary_kwargs_on_tooltip.html" %}

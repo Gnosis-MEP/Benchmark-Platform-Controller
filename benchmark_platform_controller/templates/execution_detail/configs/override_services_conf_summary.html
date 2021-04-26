@@ -4,10 +4,10 @@
 {% block element_summary_title %}Override Services Configurations{% endblock %}
 
 {% block element_table_header %}
-          <th ><p style="text-align: center;">Service</p></th>
-          <th ><p style="text-align: center;">Image</p></th>
-          <th ><p style="text-align: center;">Command</p></th>
-          <th ><p style="text-align: center;">Environment Vars</p></th>
+          <th ><p style="text-align: left; padding: 10px;">Service</p></th>
+          <th ><p style="text-align: left; padding: 10px;">Image</p></th>
+          <th ><p style="text-align: left; padding: 10px;">Command</p></th>
+          <th ><p style="text-align: left; padding: 10px;">Environment Vars</p></th>
 {% endblock %}
 
 {% block element_table_body %}
@@ -19,23 +19,23 @@
 
                 <tr>
                     <td >
-                        <p style="text-align: center;">{{ service_name }}</p>
+                        <p style="text-align: left; padding: 10px;">{{ service_name }}</p>
                     </td>
                     <td >
-                        <p style="text-align: center;">{{ service_image }}</p>
+                        <p style="text-align: left; padding: 10px;">{{ service_image }}</p>
                     </td>
                     <td >
-                        <p style="text-align: center;">{{ service_command }}</p>
+                        <p style="text-align: left; padding: 10px;">{{ service_command }}</p>
                     </td>
                     <td >
                             {% if not service_environment %}
-                            <p style="text-align: center;">
+                            <p style="text-align: left; padding: 10px;">
                                 Default
                             </p>
                             {% else %}
-                                <ul style="text-align: center; list-style-type: none;">
+                                <ul style="text-align: left;  list-style-type: none; padding: 10px;">
                                 {% for env_override in service_environment %}
-                                    <li style="text-align: center;">{{ env_override }}</li>
+                                    <li style="text-align: left; ">{{ env_override }}</li>
                                 {% endfor %}
                                 </ul>
                             {% endif %}

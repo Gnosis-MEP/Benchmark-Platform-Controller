@@ -13,28 +13,33 @@
                     </div>
 
                     <div class="card">
-                        {% include "execution_detail/main_conf_summary.html" %}
+                        {% include "execution_detail/configs/main_conf_summary.html" %}
                     </div>
                     {% if 'override_services' in json_payload.keys() %}
-
-                    <div class="card">
-                        {% with %}
-                        {% include "execution_detail/override_services_conf_summary.html" %}
-                        {% endwith %}
-                    </div>
+                        <div class="card">
+                            {% include "execution_detail/configs/override_services_conf_summary.html" %}
+                        </div>
+                    {% endif %}
+                    {% if 'datasets' in json_payload.keys() %}
+                        <div class="card">
+                            {% include "execution_detail/configs/datasets_conf_summary.html" %}
+                        </div>
                     {% endif %}
                     <div class="card">
-                        {% include "execution_detail/tasks_conf_summary.html" %}
+                        {% include "execution_detail/configs/tasks_conf_summary.html" %}
                     </div>
 
                     <div class="card">
-                        {% include "execution_detail/evaluations_conf_summary.html" %}
+                        {% include "execution_detail/configs/evaluations_conf_summary.html" %}
                     </div>
 
 
                 </div>
             </div>
         </div>
+
+        {% include "execution_detail/results/list_evaluation_results.html" %}
+
     </div>
 
 

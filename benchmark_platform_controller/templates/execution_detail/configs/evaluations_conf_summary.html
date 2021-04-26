@@ -5,8 +5,8 @@
 {% block element_summary_title %}Evaluations Configurations{% endblock %}
 
 {% block element_table_header %}
-          <th style="width: 55%"><p style="text-align: center;">Evaluation Type</p></th>
-          <th style="width: 45%"><p style="text-align: center;">Validation Passed</p></th>
+          <th style="width: 55%"><p style="text-align: left; padding: 10px;">Evaluation Type</p></th>
+          <th style="width: 45%"><p style="text-align: left; padding: 10px;">Validation Passed</p></th>
 {% endblock %}
 
 {% block element_table_body %}
@@ -15,14 +15,14 @@
 
                 <tr>
                     <td style="width: 55%">
-                        <p style="text-align: center;">
+                        <p style="text-align: left; padding: 10px;">
                             {% set kwarg_dict = evaluation.get('kwargs', {}) -%}
                             {% set kwarg_button_text = evaluation.get('module', '.').split(".")[-1] -%}
                             {% include "execution_detail/_summary_kwargs_on_tooltip.html" %}
                         </p>
                     </td>
-                    <td style="width: 55%">
-                        <p style="text-align: center;">
+                    <td style="width: 45%">
+                        <p style="text-align: left; padding: 10px;">
                             {{ json_results.get('evaluations', {}).get(evaluation.get('module'), {}).get('passed', false) }}
                         </p>
                     </td>

@@ -1,0 +1,26 @@
+<div class="row clearfix">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="card">
+            <div class="header" style="background-color: #1e4366; color: white; ">
+                <h3 style="color: white;">
+                    Evaluation Results for Benchmark: {{ execution.result_id }}
+                </h3>
+            </div>
+
+            {% if json_results is not none %}
+                {% with all_evaluations=json_results.get('evaluations', {}) %}
+                    {% set all_evaluations_passed = all_evaluations.pop('passed', False) -%}
+                    {% for evaluation_full_path, evaluation in all_evaluations.items() %}
+                    <div class="card">
+                        {% set evaluation_name=evaluation_full_path.split('.')[-1] -%}
+                        {% include "execution_detail/results/evaluations/base_evaluation.html" %}
+                    </div>
+                    {% endfor %}
+
+                {% endwith %}
+            {% endif %}
+
+
+        </div>
+    </div>
+</div>
