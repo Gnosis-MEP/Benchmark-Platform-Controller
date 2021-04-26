@@ -301,12 +301,20 @@ def list_executions():
     )
 
 
-
 @app.route('/generic_analysis/<string:evaluation_name>')
 def generic_eval_analysis(evaluation_name):
+    evaluation_full_path = 'benchmark_tools.evaluation.' + evaluation_name
+    finished_benchmarks = db.session.query(ExecutionModel).filter(
+        ExecutionModel.status == ExecutionModel.STATUS_FINISHED
+    ).order_by(ExecutionModel.id.desc())
+    filtered_benchmark_ids = [
+        execution.result_id
+        for execution in finished_benchmarks
+        if filter_results_with_evaluation(execution, evaluation_name, evaluation_full_path)
+    ]
     return render_template(
-        'index.html', bm_results=[], latest_execution_summary={}
-    )
+        'analysis/generic/select_executions.html',
+        evaluation_name=evaluation_name, benchmark_ids=filtered_benchmark_ids)
 
 
 @app.route('/execution/<string:result_id>')
