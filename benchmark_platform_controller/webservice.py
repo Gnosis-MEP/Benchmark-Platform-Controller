@@ -301,12 +301,19 @@ def list_executions():
     )
 
 
+
+@app.route('/generic_analysis/<string:evaluation_name>')
+def generic_eval_analysis(evaluation_name):
+    return render_template(
+        'index.html', bm_results=[], latest_execution_summary={}
+    )
+
+
 @app.route('/execution/<string:result_id>')
 def detailed_benchmark_result(result_id):
     execution = get_execution_or_404(result_id)
     json_results = execution.json_results or {}
     json_payload = execution.json_payload or {}
-
     return render_template(
         'execution_detail/benchmark_summary.html',
         execution=execution, json_results=json_results, json_payload=json_payload)

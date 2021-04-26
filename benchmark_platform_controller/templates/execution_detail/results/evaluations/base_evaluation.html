@@ -1,6 +1,7 @@
 {# using "evaluation" as the variable for holding the specific evaluation result dict #}
 {# using "evaluation_name" as the variable for holding the specific evaluation name #}
 {# using "evaluation_full_path" as the variable for holding the specific evaluation name #}
+
 {% set collapse_id = evaluation_name+'Res' -%}
 {% set passed = evaluation.pop('passed', False) -%}
 
@@ -14,6 +15,12 @@
     <th ><p style="text-align: left; padding: 10px;">Threshold Function</p></th>
     <th ><p style="text-align: left; padding: 10px;">Validation Passed</p></th>
 {% endblock %}
+{% block extra_element_header_components %}
+<a class="btn btn-info waves-effect" href="{{ url_for('generic_eval_analysis', evaluation_name=evaluation_name) }}">
+    Compare With Other Executions
+</a>
+{% endblock %}
+
 
 {% block element_table_body %}
 
@@ -47,4 +54,5 @@
         </td>
     </tr>
     {% endfor %}
+
 {% endblock %}
