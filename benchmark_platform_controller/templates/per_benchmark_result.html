@@ -1,22 +1,25 @@
 {% extends "base.html" %}
 {% block title %}Detailed Results for Benchmark ID: {{results.ID}}{% endblock %}
 {% block extra_head %}
-  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega@5.20.2/build/vega.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.1.0/build/vega-lite.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.17.0/build/vega-embed.min.js"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-lite@4"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script> -->
 
     <script language="javascript" type="text/javascript">
     {% autoescape false %}
         const spec = {{ plot_json }};
     {% endautoescape %}
 
-    window.onload = function() {
+    </script>
+
+    {% block on_page_load_js %}
         vegaEmbed("#img", spec)
-        // result.view provides access to the Vega View API
         .then(result => console.log(result))
         .catch(console.warn);
-    };
-    </script>
+    {% endblock %}
 
     <script language="javascript" type="text/javascript">
         function downloadCSV(csv, filename) {
@@ -47,14 +50,14 @@
     function exportTableToCSV(filename) {
         var csv = [];
         var rows = document.querySelectorAll("table tr");
-        
+
         for (var i = 0; i < rows.length; i++) {
             var row = [], cols = rows[i].querySelectorAll("td, th");
-            
-            for (var j = 0; j < cols.length; j++) 
+
+            for (var j = 0; j < cols.length; j++)
                 row.push(cols[j].innerText);
-            
-            csv.push(row.join(","));        
+
+            csv.push(row.join(","));
         }
 
         // Download CSV file
@@ -101,7 +104,7 @@
                         </div>
                     </div>
                 </div>
-            </div>    
+            </div>
             <div class="body" style="margin-left: 20px; margin-top: 5px;">
                 <div class="row">
                     <div class="col-sm-6 col-md-3">
@@ -183,7 +186,7 @@
                                         </a>
                                     </p>
                                     <p>
-                                        <button target="_blank" class="btn btn-primary waves-effect" style="float:inline-start;" 
+                                        <button target="_blank" class="btn btn-primary waves-effect" style="float:inline-start;"
                                         onclick="exportTableToCSV('results.csv')">
                                             Export</button>
                                     </p>
@@ -221,9 +224,9 @@
                                                     {% endfor %}
                                                 </tbody>
                                             </table>
-                                        </div> 
+                                        </div>
                                     </div>
-                                </div> 
+                                </div>
                             </div>
                         </div>
                     </div>
