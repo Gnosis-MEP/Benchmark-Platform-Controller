@@ -9,10 +9,10 @@
 {% block element_summary_title %}{{ evaluation_name.replace('_', ' ').title() }} ({% if passed %}Passed{% else %}Not Passed{% endif %}){% endblock %}
 
 {% block element_table_header %}
-    <th ><p style="text-align: center;">Metric Name</p></th>
-    <th ><p style="text-align: center;">Value</p></th>
-    <th ><p style="text-align: center;">Threshold Function</p></th>
-    <th ><p style="text-align: center;">Validation Passed</p></th>
+    <th ><p style="text-align: left; padding: 10px;">Metric Name</p></th>
+    <th ><p style="text-align: left; padding: 10px;">Value</p></th>
+    <th ><p style="text-align: left; padding: 10px;">Threshold Function</p></th>
+    <th ><p style="text-align: left; padding: 10px;">Validation Passed</p></th>
 {% endblock %}
 
 {% block element_table_body %}
@@ -20,23 +20,23 @@
     {% for metric_name, metric_dict in evaluation.items() %}
     <tr>
         <td>
-            <p style="text-align: center;">
+            <p style="text-align: left; padding: 10px;">
                 {{ metric_name }}
             </p>
         </td>
 
         <td>
-            <p style="text-align: center;">
+            <p style="text-align: left; padding: 10px;">
                 {{ "%.6f"|format(metric_dict.get('value')|float) }}
             </p>
         </td>
         <td>
-            <p style="text-align: center;">
+            <p style="text-align: left; padding: 10px;">
                 {{ metric_dict.get('threshold') }}
             </p>
         </td>
         <td>
-            <p style="text-align: center;">
+            <p style="text-align: left; padding: 10px;">
                 {{ metric_dict.get('passed') }}
             </p>
         </td>
