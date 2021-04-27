@@ -226,21 +226,21 @@ def is_result_valid(result):
     return result_passed
 
 
-def get_overall_evaluation_result_summary_or_msg(result, evaluation_name):
+def get_overall_evaluation_result_summary_or_msg(execution, evaluation_name):
     "Specific for the overall evals of latency, throughput and per service op. proc. speed"
 
     evaluation_full_path = f'benchmark_tools.evaluation.{evaluation_name}'
-    analysis_view = f"benchmarks_{evaluation_name.replace('_evaluation', '')}_analysis"
-    detailed_analysis_url = url_for(analysis_view)
+    detailed_analysis_url = url_for(
+        'generic_eval_analysis', evaluation_name=evaluation_name, main_benchmark_id=execution.result_id)
     summary = {
         'status': 'This evaluation is not present on the latest execution.',
         'eval_name_clean': evaluation_name.replace('_', ' ').capitalize(),
         'detailed_analysis_url': detailed_analysis_url,
     }
 
-    if result.json_results is None:
+    if execution.json_results is None:
         return summary
-    evaluations = result.json_results.get('evaluations', {})
+    evaluations = execution.json_results.get('evaluations', {})
 
     if evaluation_full_path in evaluations.keys():
         evaluation_data = evaluations.get(evaluation_full_path, {})
