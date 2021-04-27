@@ -13,12 +13,18 @@
                     </div>
                     <div class="card">
 
-                        <form action="{{ url_for('benchmarks_latency_analysis') }}" method="POST">
+                        <form action="{{ url_for('generic_eval_analysis', evaluation_name=evaluation_name) }}" method="POST">
                             <div class="multiselect">
                                 <div>
+                                    {% for execution in checked_benchmark_ids %}
+                                        <label for="selected_executions">
+                                            <input type="checkbox" name="selected_executions" value="{{ execution }}" checked/>{{ execution }}
+                                        </label><br>
+                                    {% endfor %}
                                     {% for execution in benchmark_ids %}
-                                  <label for="execution_{{ execution }}">
-                                    <input type="checkbox" name="execution_{{ execution }}" value="{{ execution }}" />{{ execution }}</label><br>
+                                        <label for="selected_executions">
+                                            <input type="checkbox" name="selected_executions" value="{{ execution }}" />{{ execution }}
+                                        </label><br>
                                     {% endfor %}
                                 </div>
                                 <input type="hidden" id="evaluation_name" name="evaluation_name" value="{{ evaluation_name }}">

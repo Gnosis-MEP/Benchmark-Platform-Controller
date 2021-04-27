@@ -16,7 +16,7 @@
     <th ><p style="text-align: left; padding: 10px;">Validation Passed</p></th>
 {% endblock %}
 {% block extra_element_header_components %}
-<a class="btn btn-info waves-effect" href="{{ url_for('generic_eval_analysis', evaluation_name=evaluation_name) }}">
+<a class="btn btn-info waves-effect" href="{{ url_for('generic_eval_analysis', evaluation_name=evaluation_name, main_benchmark_id=execution.result_id) }}">
     Compare With Other Executions
 </a>
 {% endblock %}

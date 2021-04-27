@@ -301,20 +301,55 @@ def list_executions():
     )
 
 
-@app.route('/generic_analysis/<string:evaluation_name>')
+def get_analysis_and_template_for_evaluation_name(selected_executions, evaluation_name):
+    results_dict = {
+        execution.result_id: execution.json_results for execution in selected_executions
+    }
+    if evaluation_name == 'latency_evaluation':
+        plot_json = latency_analysis(results_dict)
+        return render_template(
+            'show_analysis_bar.html', plot_json=plot_json, evaluation_name=evaluation_name)
+    elif evaluation_name == 'throughput_evaluation':
+        plot_json = throughput_analysis(results_dict)
+        return render_template(
+            'show_analysis_bar.html', plot_json=plot_json, evaluation_name=evaluation_name)
+
+    elif evaluation_name == 'per_service_speed_evaluation':
+        plot_json = per_service_speed_analysis(results_dict)
+        return render_template(
+            'show_analysis_bar.html', plot_json=plot_json, evaluation_name=evaluation_name)
+
+
+@app.route('/generic_analysis/<string:evaluation_name>', methods=['get', 'post'])
 def generic_eval_analysis(evaluation_name):
-    evaluation_full_path = 'benchmark_tools.evaluation.' + evaluation_name
-    finished_benchmarks = db.session.query(ExecutionModel).filter(
-        ExecutionModel.status == ExecutionModel.STATUS_FINISHED
-    ).order_by(ExecutionModel.id.desc())
-    filtered_benchmark_ids = [
-        execution.result_id
-        for execution in finished_benchmarks
-        if filter_results_with_evaluation(execution, evaluation_name, evaluation_full_path)
-    ]
-    return render_template(
-        'analysis/generic/select_executions.html',
-        evaluation_name=evaluation_name, benchmark_ids=filtered_benchmark_ids)
+    checked_benchmark_ids = []
+    if request.method == 'GET':
+        main_benchmark_id = request.args.get('main_benchmark_id')
+        if main_benchmark_id:
+            checked_benchmark_ids.append(main_benchmark_id)
+
+        evaluation_full_path = 'benchmark_tools.evaluation.' + evaluation_name
+        finished_benchmarks = db.session.query(ExecutionModel).filter(
+            ExecutionModel.status == ExecutionModel.STATUS_FINISHED
+        ).order_by(ExecutionModel.id.desc())
+        not_checked = lambda e: e.result_id not in checked_benchmark_ids
+
+        filtered_benchmark_ids = [
+            execution.result_id
+            for execution in finished_benchmarks
+            if filter_results_with_evaluation(execution, evaluation_name, evaluation_full_path) and not_checked(execution)
+        ]
+        return render_template(
+            'analysis/generic/select_executions.html',
+            evaluation_name=evaluation_name, benchmark_ids=filtered_benchmark_ids,
+            checked_benchmark_ids=checked_benchmark_ids)
+
+    elif request.method == 'POST':
+        selected_execution_ids = request.form.getlist('selected_executions')
+        selected_executions = db.session.query(ExecutionModel).filter(
+            ExecutionModel.result_id.in_(selected_execution_ids)
+        ).all()
+        return get_analysis_and_template_for_evaluation_name(selected_executions, evaluation_name)
 
 
 @app.route('/execution/<string:result_id>')
