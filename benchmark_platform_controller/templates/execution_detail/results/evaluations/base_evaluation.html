@@ -9,50 +9,68 @@
 
 {% block element_summary_title %}{{ evaluation_name.replace('_', ' ').title() }} ({% if passed %}Passed{% else %}Not Passed{% endif %}){% endblock %}
 
+
+{% block element_summary_header_color %}{% if 'error' in evaluation.keys() %}#ffc107{% else %}{{ super() }}{% endif %}{% endblock %}
+
 {% block element_table_header %}
-    <th ><p style="text-align: left; padding: 10px;">Metric Name</p></th>
-    <th ><p style="text-align: left; padding: 10px;">Value</p></th>
-    <th ><p style="text-align: left; padding: 10px;">Threshold Function</p></th>
-    <th ><p style="text-align: left; padding: 10px;">Validation Passed</p></th>
+    {% if 'error' in evaluation.keys() %}
+        <th ><p style="text-align: left; padding: 10px;">Description of Error During Evaluation</p></th>
+    {% else %}
+        <th ><p style="text-align: left; padding: 10px;">Metric Name</p></th>
+        <th ><p style="text-align: left; padding: 10px;">Value</p></th>
+        <th ><p style="text-align: left; padding: 10px;">Threshold Function</p></th>
+        <th ><p style="text-align: left; padding: 10px;">Validation Passed</p></th>
+    {% endif %}
 {% endblock %}
 {% block extra_element_header_components %}
-<a class="btn btn-info waves-effect" href="{{ url_for('generic_eval_analysis', evaluation_name=evaluation_name, main_benchmark_id=execution.result_id) }}">
-    Compare With Other Executions
-</a>
+    {% if 'error' not in evaluation.keys() %}
+        <a class="btn btn-info waves-effect" href="{{ url_for('generic_eval_analysis', evaluation_name=evaluation_name, main_benchmark_id=execution.result_id) }}">
+            Compare With Other Executions
+        </a>
+    {% endif %}
 {% endblock %}
 
 
 {% block element_table_body %}
+        {% if 'error' in evaluation.keys() %}
+            <tr>
+                <td>
+                    <p style="text-align: left; padding: 10px;">
+                        {{ evaluation.get('error') }}
+                    </p>
+                </td>
+        {% else %}
+            {% for metric_name, metric_dict in evaluation.items() %}
+                        {% set metric_value = metric_dict.get('value') -%}
+                    <tr>
+                        <td>
+                            <p style="text-align: left; padding: 10px;">
+                                {{ metric_name }}
+                            </p>
+                        </td>
 
-    {% for metric_name, metric_dict in evaluation.items() %}
-        {% set metric_value = metric_dict.get('value') -%}
-    <tr>
-        <td>
-            <p style="text-align: left; padding: 10px;">
-                {{ metric_name }}
-            </p>
-        </td>
+                        <td>
+                            <p style="text-align: left; padding: 10px;">
+                                {% if metric_value is number %}
+                                    {{ "%.6f"|format(metric_value|float) }}
+                                {% else %}
+                                    {{ metric_value }}
+                                {% endif %}
+                            </p>
+                        </td>
+                        <td>
+                            <p style="text-align: left; padding: 10px;">
+                                {{ metric_dict.get('threshold') }}
+                            </p>
+                        </td>
+                        <td>
+                            <p style="text-align: left; padding: 10px;">
+                                {{ metric_dict.get('passed') }}
+                            </p>
+                        </td>
+                    </tr>
 
-        <td>
-            <p style="text-align: left; padding: 10px;">
-                {% if metric_value is number %}
-                    {{ "%.6f"|format(metric_value|float) }}
-                {% else %}
-                    {{ metric_value }}
-                {% endif %}
-            </p>
-        </td>
-        <td>
-            <p style="text-align: left; padding: 10px;">
-                {{ metric_dict.get('threshold') }}
-            </p>
-        </td>
-        <td>
-            <p style="text-align: left; padding: 10px;">
-                {{ metric_dict.get('passed') }}
-            </p>
-        </td>
-    </tr>
-    {% endfor %}
+            {% endfor %}
+        {% endif %}
 
 {% endblock %}

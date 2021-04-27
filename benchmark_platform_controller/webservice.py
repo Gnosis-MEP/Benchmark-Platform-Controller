@@ -294,7 +294,6 @@ def list_executions():
         bm_results = bm_results_with_urls
     except:
         pass
-
     latest_execution_summary = get_latest_execution_results_summary(bm_results)
     return render_template(
         'index.html', bm_results=bm_results, latest_execution_summary=latest_execution_summary
@@ -334,11 +333,12 @@ def generic_eval_analysis(evaluation_name):
         ).order_by(ExecutionModel.id.desc())
         not_checked = lambda e: e.result_id not in checked_benchmark_ids
 
-        filtered_benchmark_ids = [
-            execution.result_id
-            for execution in finished_benchmarks
-            if filter_results_with_evaluation(execution, evaluation_name, evaluation_full_path) and not_checked(execution)
-        ]
+        filtered_benchmark_ids = []
+        for execution in finished_benchmarks:
+            is_execution_ok = filter_finished_results_with_evaluation_without_error(
+                execution, evaluation_name, evaluation_full_path)
+            if is_execution_ok and not_checked(execution):
+                filtered_benchmark_ids.append(execution.result_id)
         return render_template(
             'analysis/generic/select_executions.html',
             evaluation_name=evaluation_name, benchmark_ids=filtered_benchmark_ids,
@@ -362,7 +362,7 @@ def detailed_benchmark_result(result_id):
         execution=execution, json_results=json_results, json_payload=json_payload)
 
 
-def filter_results_with_evaluation(result, evaluation_name, evaluation_path):
+def filter_finished_results_with_evaluation_without_error(result, evaluation_name, evaluation_path):
     if result.status == "FINISHED":  # checking if the benchmark run is finished or not.
         evaluation_list = result.json_results.get('evaluations', {})
         has_evaluation = evaluation_path in evaluation_list.keys()
