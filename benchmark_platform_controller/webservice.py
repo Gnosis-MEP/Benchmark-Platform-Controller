@@ -1,18 +1,14 @@
 #!/usr/bin/env python
-import base64
-import io
-import json
+import copy
 import os
 
 from celery.result import AsyncResult
 from flask import Flask, request, jsonify, make_response, abort, url_for, render_template, send_file
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-from matplotlib.figure import Figure
 from sqlalchemy_utils import database_exists, create_database
-import numpy as np
 
 
-from benchmark_platform_controller.analysis import latency_analysis, throughput_analysis, per_service_speed_analysis, per_benchmark_analysis, tabular_view
+from benchmark_platform_controller.analysis import (
+    latency_analysis, throughput_analysis, per_service_speed_analysis, per_benchmark_analysis, tabular_view)
 from benchmark_platform_controller.tasks import (
     execute_benchmark,
     stop_benchmark,
@@ -28,6 +24,7 @@ WAIT_BEFORE_ASK_TO_RUN_AGAIN = 10
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ECHO'] = False  # enable this to see sql queries in the terminal
 db.init_app(app)
 
 
@@ -154,15 +151,13 @@ def run_benchmark():
     result_id = None
     execution_configurations = request.json
 
-    # override_services = request.json.get('override_services')
-    # target_system_configs = request.json
     if not get_clear_to_go():
         return make_response(jsonify({'wait': WAIT_BEFORE_ASK_TO_RUN_AGAIN}), 200)
 
-    result = execute_benchmark.delay(execution_configurations)
+    result = execute_benchmark.delay(copy.deepcopy(execution_configurations))
     result_id = result.id
 
-    execution = ExecutionModel(result_id=result_id)
+    execution = ExecutionModel(result_id=result_id, json_payload=execution_configurations)
     db.session.add(execution)
     db.session.commit()
     print(f'inside db: {[e.id for e in db.session.query(ExecutionModel).all()]}')
@@ -231,44 +226,52 @@ def is_result_valid(result):
     return result_passed
 
 
-def clean_latency_result(json):
-    if ("benchmark_tools.evaluation.latency_evaluation" in json["evaluations"]):
-        latency_evals = {
-            'status': json["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["passed"],
-            'value': json["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["latency_avg"]["value"]
-        }
-    else:
-        latency_evals = {
-            'status': "This evaluation does not exist for the latest iteration",
-            'value': "This evaluation does not exist for the latest iteration"
-        }
-    return latency_evals
+def get_overall_evaluation_result_summary_or_msg(execution, evaluation_name):
+    "Specific for the overall evals of latency, throughput and per service op. proc. speed"
+
+    evaluation_full_path = f'benchmark_tools.evaluation.{evaluation_name}'
+    detailed_analysis_url = url_for(
+        'generic_eval_analysis', evaluation_name=evaluation_name, main_benchmark_id=execution.result_id)
+    summary = {
+        'status': 'This evaluation is not present on the latest execution.',
+        'eval_name_clean': evaluation_name.replace('_', ' ').capitalize(),
+        'detailed_analysis_url': detailed_analysis_url,
+    }
+
+    if execution.json_results is None:
+        return summary
+    evaluations = execution.json_results.get('evaluations', {})
+
+    if evaluation_full_path in evaluations.keys():
+        evaluation_data = evaluations.get(evaluation_full_path, {})
+        summary['status'] = evaluation_data.get('passed', False)
+
+        if 'latency_evaluation' in evaluation_full_path:
+            summary['value'] = evaluation_data.get('latency_avg', {}).get('value')
+
+        elif 'throughput_evaluation' in evaluation_full_path:
+            summary['value'] = evaluation_data.get('throughput_fps', {}).get('value')
+
+    return summary
 
 
-def clean_throughput_result(json):
-    if ("benchmark_tools.evaluation.throughput_evaluation" in json["evaluations"]):
-        throughput_evals = {
-            'status': json["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["passed"],
-            'value': json["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["throughput_fps"]["value"]
-        }
-    else:
-        throughput_evals = {
-            'status': "This evaluation does not exist for the latest iteration",
-            'value': "This evaluation does not exist for the latest iteration"
-        }
-    return throughput_evals
-
-
-def clean_speed_result(json):
-    if ("benchmark_tools.evaluation.per_service_speed_evaluation" in json["evaluations"]):
-        per_service_speed_evals = {
-            'status': json["evaluations"]["benchmark_tools.evaluation.per_service_speed_evaluation"]["passed"]
-        }
-    else:
-        per_service_speed_evals = {
-            'status': "This evaluation does not exist for the latest iteration"
-        }
-    return per_service_speed_evals
+def get_latest_execution_results_summary(bm_results):
+    latest_execution_summary = {
+        'latency_evaluation': {},
+        'throughput_evaluation': {},
+        'per_service_speed_evaluation': {},
+    }
+    if len(bm_results) != 0:
+        lastest_execution = bm_results[0]['execution']
+        latest_execution_summary.update({
+            'latency_evaluation': get_overall_evaluation_result_summary_or_msg(
+                lastest_execution, 'latency_evaluation'),
+            'throughput_evaluation': get_overall_evaluation_result_summary_or_msg(
+                lastest_execution, 'throughput_evaluation'),
+            'per_service_speed_evaluation': get_overall_evaluation_result_summary_or_msg(
+                lastest_execution, 'per_service_speed_evaluation'),
+        })
+    return latest_execution_summary
 
 
 @app.route('/', methods=['get'])
@@ -281,7 +284,7 @@ def list_executions():
             obj = {
                 'id': result.result_id,
                 'status': result.status,
-                'url': url_for('per_benchmark_result', result_id=result.result_id),
+                'url': url_for('detailed_benchmark_result', result_id=result.result_id),
                 'validation': is_result_valid(result),
                 'execution': result,
             }
@@ -291,60 +294,75 @@ def list_executions():
         bm_results = bm_results_with_urls
     except:
         pass
-
-    latency_evals = []
-    throughput_evals = []
-    per_service_speed_evals = []
-    if len(bm_results) != 0:
-        lastest_execution_json = bm_results[0]['execution'].json_results
-        try:
-            latency_evals = clean_latency_result(lastest_execution_json)
-            throughput_evals = clean_throughput_result(lastest_execution_json)
-            per_service_speed_evals = clean_speed_result(lastest_execution_json)
-        except:
-            pass
-    # renderin the base template with requied args.
+    latest_execution_summary = get_latest_execution_results_summary(bm_results)
     return render_template(
-        'index.html', bm_results=bm_results, latency_evals=latency_evals, throughput_evals=throughput_evals,
-        per_service_speed_evals=per_service_speed_evals
+        'index.html', bm_results=bm_results, latest_execution_summary=latest_execution_summary
     )
 
 
-@app.route('/get_result/<string:result_id>')
-def per_benchmark_result(result_id):
+def get_analysis_and_template_for_evaluation_name(selected_executions, evaluation_name):
+    results_dict = {
+        execution.result_id: execution.json_results for execution in selected_executions
+    }
+    if evaluation_name == 'latency_evaluation':
+        plot_json = latency_analysis(results_dict)
+        return render_template(
+            'show_analysis_bar.html', plot_json=plot_json, evaluation_name=evaluation_name)
+    elif evaluation_name == 'throughput_evaluation':
+        plot_json = throughput_analysis(results_dict)
+        return render_template(
+            'show_analysis_bar.html', plot_json=plot_json, evaluation_name=evaluation_name)
+
+    elif evaluation_name == 'per_service_speed_evaluation':
+        plot_json = per_service_speed_analysis(results_dict)
+        return render_template(
+            'show_analysis_bar.html', plot_json=plot_json, evaluation_name=evaluation_name)
+
+
+@app.route('/generic_analysis/<string:evaluation_name>', methods=['get', 'post'])
+def generic_eval_analysis(evaluation_name):
+    checked_benchmark_ids = []
+    if request.method == 'GET':
+        main_benchmark_id = request.args.get('main_benchmark_id')
+        if main_benchmark_id:
+            checked_benchmark_ids.append(main_benchmark_id)
+
+        evaluation_full_path = 'benchmark_tools.evaluation.' + evaluation_name
+        finished_benchmarks = db.session.query(ExecutionModel).filter(
+            ExecutionModel.status == ExecutionModel.STATUS_FINISHED
+        ).order_by(ExecutionModel.id.desc())
+        not_checked = lambda e: e.result_id not in checked_benchmark_ids
+
+        filtered_benchmark_ids = []
+        for execution in finished_benchmarks:
+            is_execution_ok = filter_finished_results_with_evaluation_without_error(
+                execution, evaluation_name, evaluation_full_path)
+            if is_execution_ok and not_checked(execution):
+                filtered_benchmark_ids.append(execution.result_id)
+        return render_template(
+            'analysis/generic/select_executions.html',
+            evaluation_name=evaluation_name, benchmark_ids=filtered_benchmark_ids,
+            checked_benchmark_ids=checked_benchmark_ids)
+
+    elif request.method == 'POST':
+        selected_execution_ids = request.form.getlist('selected_executions')
+        selected_executions = db.session.query(ExecutionModel).filter(
+            ExecutionModel.result_id.in_(selected_execution_ids)
+        ).all()
+        return get_analysis_and_template_for_evaluation_name(selected_executions, evaluation_name)
+
+
+@app.route('/execution/<string:result_id>')
+def detailed_benchmark_result(result_id):
     execution = get_execution_or_404(result_id)
-
-    obj = execution.json_results
-    try:
-        plot_json = per_benchmark_analysis(obj)
-        rows = tabular_view(obj)
-        det_result = {
-            'ID': result_id,
-            'Benchmark_Passed': obj['evaluations']['passed'],
-            'Query': obj["configs"]["benchmark"]["tasks"][1]["kwargs"]["actions"][0]["query"],
-            'Benchmark_Running_Time': obj["configs"]["benchmark"]["tasks"][1]["kwargs"]["actions"][1]["sleep_time"],
-            'Latency_Evaluation_Passed': obj["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["passed"],
-            'Latency_Value': obj["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["latency_avg"]["value"],
-            'Traces': obj["evaluations"]["benchmark_tools.evaluation.latency_evaluation"]["data_points"]["value"],
-            'Throughput_Evaluation_Passed': obj["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["passed"],
-            'Throughput_Value': obj["evaluations"]["benchmark_tools.evaluation.throughput_evaluation"]["throughput_fps"]["value"],
-            'Per_Service_Speed_Evaluation_Passed': obj['evaluations']["benchmark_tools.evaluation.per_service_speed_evaluation"]["passed"],
-            'Geolocation': obj["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["geolocation"],
-            'CCTV': obj["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["cctv"],
-            'Color': obj["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["color"],
-            'FPS': obj["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["fps"],
-            'Resolution': obj["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["resolution"],
-            'Color_Channels': obj["configs"]["benchmark"]["tasks"][0]["kwargs"]["actions"][0]["meta"]["color_channels"]
-        }
-    except:
-        plot_json = {}
-        rows = []
-        det_result = {}
-
-    return render_template('per_benchmark_result.html', results=det_result, plot_json=plot_json, rows=rows)
+    json_results = execution.json_results or {}
+    json_payload = execution.json_payload or {}
+    return render_template(
+        'execution_detail/benchmark_summary.html',
+        execution=execution, json_results=json_results, json_payload=json_payload)
 
 
-def filter_results_with_evaluation(result, evaluation_name, evaluation_path):
+def filter_finished_results_with_evaluation_without_error(result, evaluation_name, evaluation_path):
     if result.status == "FINISHED":  # checking if the benchmark run is finished or not.
         evaluation_list = result.json_results.get('evaluations', {})
         has_evaluation = evaluation_path in evaluation_list.keys()
@@ -355,108 +373,6 @@ def filter_results_with_evaluation(result, evaluation_name, evaluation_path):
                 return True
 
     return False
-
-
-@app.route('/analysis/latency', methods=['get', 'post'])
-def benchmarks_latency_analysis():
-    if request.method == 'POST':
-        evaluation_name = request.form['evaluation_name']
-        checked_boxes_ids = []
-        for key in request.form.keys():
-            if 'bm_results_' in key:
-                checked_boxes_ids.append(request.form[key])
-        bm_results = db.session.query(ExecutionModel).order_by(ExecutionModel.id.desc())
-        bm_results = filter(lambda r: r.result_id in checked_boxes_ids, bm_results)
-        results_dict = {
-            result.result_id: result.json_results for result in bm_results
-        }
-        plot_json = latency_analysis(results_dict)
-        return render_template(
-            'show_analysis_bar.html', plot_json=plot_json, evaluation_name=evaluation_name)
-    else:
-        evaluation_name = 'latency'
-        evaluation_path = 'benchmark_tools.evaluation.latency_evaluation'
-        bm_valid_results = []
-        try:
-            bm_results = db.session.query(ExecutionModel).order_by(ExecutionModel.id.desc())
-            for result in bm_results:
-                if filter_results_with_evaluation(result, evaluation_name, evaluation_path):
-                    result_obj = {
-                        'id': result.result_id
-                    }
-                    bm_valid_results.append(result_obj)
-        except:
-            pass
-        return render_template(
-            'latency_analysis.html', bm_results=bm_valid_results, evaluation_name=evaluation_name)
-
-
-@app.route('/analysis/throughput', methods=['get', 'post'])
-def benchmarks_throughput_analysis():
-    if request.method == 'POST':
-        evaluation_name = request.form['evaluation_name']
-        checked_boxes_ids = []
-        for key in request.form.keys():
-            if 'bm_results_' in key:
-                checked_boxes_ids.append(request.form[key])
-        bm_results = db.session.query(ExecutionModel).order_by(ExecutionModel.id.desc())
-        bm_results = filter(lambda r: r.result_id in checked_boxes_ids, bm_results)
-        results_dict = {
-            result.result_id: result.json_results for result in bm_results
-        }
-        plot_json = throughput_analysis(results_dict)
-        return render_template(
-            'show_analysis_bar.html', plot_json=plot_json, evaluation_name=evaluation_name)
-    else:
-        evaluation_name = 'throughput'
-        evaluation_path = 'benchmark_tools.evaluation.throughput_evaluation'
-        bm_valid_results = []
-        try:
-            bm_results = db.session.query(ExecutionModel).order_by(ExecutionModel.id.desc())
-            for result in bm_results:
-                if filter_results_with_evaluation(result, evaluation_name, evaluation_path):
-                    result_obj = {
-                        'id': result.result_id
-                    }
-                    bm_valid_results.append(result_obj)
-        except:
-            pass
-        return render_template(
-            'throughput_analysis.html', bm_results=bm_valid_results, evaluation_name=evaluation_name)
-
-
-@app.route('/analysis/per_service_speed', methods=['get', 'post'])
-def benchmarks_per_service_speed_analysis():
-    if request.method == 'POST':
-        evaluation_name = request.form['evaluation_name']
-        checked_boxes_ids = []
-        for key in request.form.keys():
-            if 'bm_results_' in key:
-                checked_boxes_ids.append(request.form[key])
-        bm_results = db.session.query(ExecutionModel).order_by(ExecutionModel.id.desc())
-        bm_results = filter(lambda r: r.result_id in checked_boxes_ids, bm_results)
-        results_dict = {
-            result.result_id: result.json_results for result in bm_results
-        }
-        plot_json = per_service_speed_analysis(results_dict)
-        return render_template(
-            'show_analysis_bar.html', plot_json=plot_json, evaluation_name=evaluation_name)
-    else:
-        evaluation_name = 'per_service_speed'
-        evaluation_path = 'benchmark_tools.evaluation.per_service_speed_evaluation'
-        bm_valid_results = []
-        try:
-            bm_results = db.session.query(ExecutionModel).order_by(ExecutionModel.id.desc())
-            for result in bm_results:
-                if filter_results_with_evaluation(result, evaluation_name, evaluation_path):
-                    result_obj = {
-                        'id': result.result_id
-                    }
-                    bm_valid_results.append(result_obj)
-        except:
-            pass
-        return render_template(
-            'per_service_speed_analysis.html', bm_results=bm_valid_results, evaluation_name=evaluation_name)
 
 
 def database_is_empty():

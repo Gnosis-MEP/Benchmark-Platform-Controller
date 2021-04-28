@@ -1,0 +1,22 @@
+{% set collapse_id = 'datasetsConf' -%}
+
+{% extends "execution_detail/base_element_summary_table.html" %}
+
+{% block element_summary_title %}Datasets Configurations{% endblock %}
+
+{% block element_table_header %}
+          <th ><p style="text-align: left; padding: 10px;">Dataset Name</p></th>
+{% endblock %}
+
+{% block element_table_body %}
+            {% for dataset in json_payload.get('datasets', []) %}
+
+            <tr>
+                <td>
+                    <p style="text-align: left; padding: 10px;">
+                        {{ dataset }}
+                    </p>
+                </td>
+            </tr>
+            {% endfor %}
+{% endblock %}

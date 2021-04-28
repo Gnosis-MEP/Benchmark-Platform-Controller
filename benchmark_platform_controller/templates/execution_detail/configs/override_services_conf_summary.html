@@ -1,0 +1,57 @@
+{% set collapse_id = 'overrideServices' -%}
+{% extends "execution_detail/base_element_summary_table.html" %}
+
+{% block element_summary_title %}Override Services Configurations{% endblock %}
+
+{% block element_table_header %}
+          <th ><p style="text-align: left; padding: 10px;">Service</p></th>
+          <th ><p style="text-align: left; padding: 10px;">Image</p></th>
+          <th ><p style="text-align: left; padding: 10px;">Command</p></th>
+          <th ><p style="text-align: left; padding: 10px;">Environment Vars</p></th>
+          <th ><p style="text-align: left; padding: 10px;">Other Configs</p></th>
+{% endblock %}
+
+{% block element_table_body %}
+
+            {% for service_name, service_confs in json_payload.get('override_services', {}).items() %}
+                {% set service_image = service_confs.pop('image', 'Default') -%}
+                {% set service_command = service_confs.pop('command', 'Default') -%}
+                {% set service_environment = service_confs.pop('environment', []) -%}
+
+                <tr>
+                    <td >
+                        <p style="text-align: left; padding: 10px;">{{ service_name }}</p>
+                    </td>
+                    <td >
+                        <p style="text-align: left; padding: 10px;">{{ service_image }}</p>
+                    </td>
+                    <td >
+                        <p style="text-align: left; padding: 10px;">{{ service_command }}</p>
+                    </td>
+                    <td >
+                            {% if not service_environment %}
+                            <p style="text-align: left; padding: 10px;">
+                                Default
+                            </p>
+                            {% else %}
+                                <ul style="text-align: left;  list-style-type: none; padding: 10px;">
+                                {% for env_override in service_environment %}
+                                    <li style="text-align: left; ">{{ env_override }}</li>
+                                {% endfor %}
+                                </ul>
+                            {% endif %}
+                    </td>
+                    <td >
+                        {% if not service_confs.keys() %}
+                            <p style="text-align: left; padding: 10px;">Default</p>
+                        {% else %}
+                                <ul style="text-align: left;  list-style-type: none; padding: 10px;">
+                                {% for override_conf, override_value in service_confs.items() %}
+                                    <li style="text-align: left; ">{{override_conf}}: {{ override_value }}</li>
+                                {% endfor %}
+                                </ul>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+{% endblock %}

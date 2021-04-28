@@ -1,23 +1,22 @@
 {% extends "base.html" %}
-{% block title %}Showing Benchmarks results for: {{ evaluation_name }}{% endblock %}
+{% block title %}Showing Benchmarks results for: {{ evaluation_name.replace('_', ' ').title() }}{% endblock %}
 {% block extra_head %}
-  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-lite@4"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega@5.20.2/build/vega.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.1.0/build/vega-lite.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.17.0/build/vega-embed.min.js"></script>
 
 <script language="javascript" type="text/javascript">
   {% autoescape false %}
     const spec = {{ plot_json }};
   {% endautoescape %}
-
-  window.onload = function() {
-    vegaEmbed("#img", spec)
-    // result.view provides access to the Vega View API
-    .then(result => console.log(result))
-    .catch(console.warn);
-  };
 </script>
 {% endblock %}
+
+    {% block on_page_load_js %}
+        vegaEmbed("#img", spec)
+        .then(result => console.log(result))
+        .catch(console.warn);
+    {% endblock %}
 
 {% block content %}
     <div class="container-fluid">
@@ -27,7 +26,7 @@
                     <div class="header"
                          style="background-color: #1e4366; color: white;">
                         <div>
-                            <h2 style="color: white;">Showing Benchmarks results for: {{ evaluation_name }}</h2>
+                            <h2 style="color: white;">Showing Detailed analysis for: {{ evaluation_name.replace('_', ' ').title() }}</h2>
                         </div>
                     </div>
                     <div class="body"  style="max-height: 500px;overflow: auto;">

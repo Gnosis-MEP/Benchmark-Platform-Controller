@@ -1,0 +1,46 @@
+
+    <div class="container-fluid">
+        <div class="row clearfix">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class="card">
+                    <div class="header" style="background-color: #1e4366; color: white; ">
+                        <h2 style="color: white;">
+                            Execution Evaluation Summary
+                            <small>Please select the suitable for detailed analysis.</small>
+                        </h2>
+                    </div>
+                    <div class="body" style="margin-left: 20px; margin-top: 5px;">
+                            <div class="row">
+                        {% for eval_type, eval_summary in latest_execution_summary.items() %}
+                                <div class="col-sm-6 col-md-3">
+                                    <div class="thumbnail">
+                                        <div class="header" style="background-color: #1e4366; color: white; padding: 10px 15px 1px 10px; border: 0px;">
+                                            <div>
+                                                <h4>{{ eval_summary.eval_name_clean }}</h4>
+                                            </div>
+                                        </div>
+                                        <div class="caption">
+                                            <p>
+                                                <p><b>{{ eval_summary.eval_name_clean }} Passed:</b> <br>{{eval_summary.status}}</p>
+                                                {% if eval_summary.value %}
+                                                    <p><b>{{ eval_summary.eval_name_clean }} Value:</b> <br>{{eval_summary.value}}s</p>
+                                                {% endif %}
+                                            </p>
+                                            <p>
+                                                <a target="_blank" href="{{ eval_summary.detailed_analysis_url }}" class="btn btn-primary waves-effect"
+                                                    role="button">Open</a>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                        {% endfor %}
+
+                        </div>
+
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

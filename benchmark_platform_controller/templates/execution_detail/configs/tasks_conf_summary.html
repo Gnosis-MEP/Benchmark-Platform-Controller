@@ -1,0 +1,48 @@
+{% set collapse_id = 'tasksConf' -%}
+
+{% extends "execution_detail/base_element_summary_table.html" %}
+
+{% block element_summary_title %}Tasks Configurations{% endblock %}
+
+{% block element_table_header %}
+          <th style="width: 10%"><p style="text-align: left; padding: 10px;">Execution Order</p></th>
+          <th style="width: 45%"><p style="text-align: left; padding: 10px;">Action</p></th>
+          <th style="width: 45%"><p style="text-align: left; padding: 10px;">Task Module</p></th>
+{% endblock %}
+
+{% block element_table_body %}
+            {% if json_results is not none %}
+
+                {% set task_actions_count = [] -%}
+                {% for task in json_results.get('configs', {}).get('benchmark', {}).get('tasks', []) %}
+                    {% set task_actions = task.get('kwargs', {}).pop('actions', []) -%}
+
+                    {% for action in task_actions %}
+                        {% set __ = task_actions_count.append(1) %}
+                        {% set action_type = action.pop('action') %}
+                    <tr>
+
+                        <td style="width: 10%">
+                            <p style="text-align: left; padding: 10px;">{{ task_actions_count|length }}</p>
+                        </td>
+                        <td style="width: 45%">
+                            <p style="text-align: left; padding: 10px;">
+                            {% set kwarg_dict = action -%}
+                            {% set kwarg_button_text = action_type -%}
+                            {% include "execution_detail/_summary_kwargs_on_tooltip.html" %}
+                            </p>
+                        </td>
+
+                        <td style="width: 45%">
+                            <p style="text-align: left; padding: 10px;">
+                            {% set kwarg_dict = task.get('kwargs', {}) -%}
+                            {% set kwarg_button_text = task.get('module', '.').split(".")[-1]  -%}
+                            {% include "execution_detail/_summary_kwargs_on_tooltip.html" %}
+                            </p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% endfor %}
+            {% endif %}
+{% endblock %}
+

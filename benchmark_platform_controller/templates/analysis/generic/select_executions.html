@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}{{ evaluation_name.replace('_', ' ').title() }} Analysis - Select Benchmarks Executions:{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row clear-fix">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="header" style="background-color: #1e4366; color: white;">
+                        <div>
+                            <h2 style="color: white;">Select Benchmarks for comparison on: {{ evaluation_name.replace('_', ' ').title() }} </h2>
+                        </div>
+                    </div>
+                    <div class="card">
+
+                        <form action="{{ url_for('generic_eval_analysis', evaluation_name=evaluation_name) }}" method="POST">
+                            <div class="multiselect">
+                                <div>
+                                    {% for execution in checked_benchmark_ids %}
+                                        <label for="selected_executions">
+                                            <input type="checkbox" name="selected_executions" value="{{ execution }}" checked/>{{ execution }}
+                                        </label><br>
+                                    {% endfor %}
+                                    {% for execution in benchmark_ids %}
+                                        <label for="selected_executions">
+                                            <input type="checkbox" name="selected_executions" value="{{ execution }}" />{{ execution }}
+                                        </label><br>
+                                    {% endfor %}
+                                </div>
+                                <input type="hidden" id="evaluation_name" name="evaluation_name" value="{{ evaluation_name }}">
+                                &nbsp;&nbsp;
+                                <input id="submit_button" style="width: 100px; margin-left: 10px; background-color: #00a7a9;" type="submit" value="SUBMIT" class="btn btn-info waves-effect" />
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
