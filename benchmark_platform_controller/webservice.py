@@ -8,7 +8,10 @@ from sqlalchemy_utils import database_exists, create_database
 
 
 from benchmark_platform_controller.analysis import (
-    latency_analysis, throughput_analysis, per_service_speed_analysis, per_benchmark_analysis, tabular_view)
+    latency_analysis,
+    throughput_analysis,
+    per_service_speed_analysis
+)
 from benchmark_platform_controller.tasks import (
     execute_benchmark,
     stop_benchmark,
