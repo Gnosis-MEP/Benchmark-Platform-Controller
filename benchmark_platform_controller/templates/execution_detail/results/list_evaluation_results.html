@@ -5,6 +5,15 @@
                 <h3 style="color: white;">
                     Evaluation Results for Benchmark: {{ execution.result_id }}
                 </h3>
+
+                    <p>
+                        <a class="btn btn-primary waves-effect" href="{{ url_for('get_result', result_id=execution.result_id) }}" >
+                            Results Json
+                        </a>
+                        <a class="btn btn-primary waves-effect" href="{{ url_for('get_artefacts', result_id=execution.result_id) }}" >
+                            Execution Artefacts
+                        </a>
+                    </p>
             </div>
 
             {% if json_results is not none %}
