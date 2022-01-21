@@ -1,3 +1,4 @@
+import glob
 import os
 
 from decouple import config
@@ -21,6 +22,8 @@ BENCHMARK_JSON_CONFIG_FILENAME = config('BENCHMARK_JSON_CONFIG_FILENAME', defaul
 
 DEFAULT_BENCHMARK_JSON_FILE = config('DEFAULT_BENCHMARK_JSON_FILE', default='configs.json')
 
+BENCHMARK_TEMPLATES_DIR = config('BENCHMARK_TEMPLATES_DIR', default=os.path.join(PROJECT_ROOT, 'benchmark_templates'))
+
 REDIS_ADDRESS = config('REDIS_ADDRESS', default='localhost')
 REDIS_PORT = config('REDIS_PORT', default='6379')
 
@@ -37,7 +40,6 @@ TIMEOUT_SCRIPT = config(
 
 DATASETS_PATH_ON_HOST = config('DATASETS_PATH_ON_HOST', default=os.path.join(PROJECT_ROOT, 'datasets'))
 
-
 WEBHOOK_BASE_URL = config('WEBHOOK_BASE_URL', default='http://localhost:5000/api/v1.0/set_result')
 
 EXECUTION_TIMEOUT = config('EXECUTION_TIMEOUT', default=60)
@@ -47,4 +49,13 @@ CLEANUP_TIMEOUT = config('CLEANUP_TIMEOUT', default=20, cast=int)
 LOGGING_LEVEL = config('LOGGING_LEVEL', default='DEBUG')
 
 
+def load_benchmark_templates_map():
+    template_map = {}
+    search_path = os.path.join(BENCHMARK_TEMPLATES_DIR, '*.json')
+    for file_path in glob.glob(search_path):
+        template_name = os.path.basename(file_path).split('.json')[0]
+        template_map[template_name] = file_path
+    return template_map
 
+
+BENCHMARK_TEMPLATES_MAP = load_benchmark_templates_map()

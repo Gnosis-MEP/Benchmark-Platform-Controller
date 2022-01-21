@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Create new Benchmark from template{% endblock %}
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="row clearfix">
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div class="card">
+                <div class="header" style="background-color: #1e4366; color: white; ">
+                    <h3 style="color: white;">
+                        Available Benchmark Templates
+                    </h3>
+                </div>
+
+                {% for template_name in templates %}
+                    <div class="card">
+                        {% include "new_benchmark/_benchmark_template_sumary.html" %}
+                    </div>
+                {% endfor %}
+
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block on_page_load_js %}
+    $("button.new-bm").click(function(e) {
+        e.preventDefault();
+        $.ajax({
+            type: "POST",
+            url: "{{ url_for('run_benchmark_from_template') }}",
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            data: JSON.stringify({
+                template_name: $(this).val()
+            }),
+            success: function(result) {
+                if ("wait" in result){
+                    alert("System is already busy, wait " + result.wait + " seconds before trying again.");
+                    return;
+                }
+
+                alert("Benchmark Started, will redirect to benchmark page...");
+                window.location.replace("/execution/" + result.result_id);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.log(jqXHR);
+                console.log(textStatus);
+                console.log(errorThrown);
+ //               var data = $.parseJSON(result);
+ //               console.log(data);
+ //               console.log(result);
+  //              var msg = "Unknown Reason";
+  //              if ("responseJSON" in data){
+  //                  if ("message" in data){
+  //                      msg = data.responseJSON.message;
+  //                  }
+  //              }
+                alert("Cannot start new Benchmark at the moment, reason: " + errorThrown);
+            }
+        });
+    });
+{% endblock %}

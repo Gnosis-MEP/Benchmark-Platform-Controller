@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import copy
+import json
 import os
 
 from celery.result import AsyncResult
@@ -18,7 +19,7 @@ from benchmark_platform_controller.tasks import (
     check_and_mark_finished_benchmark,
     celery_app
 )
-from benchmark_platform_controller.conf import DATABASE_URL, ARTEFACTS_DIR
+from benchmark_platform_controller.conf import DATABASE_URL, ARTEFACTS_DIR, BENCHMARK_TEMPLATES_MAP
 from benchmark_platform_controller.models import ExecutionModel, db
 
 
@@ -29,6 +30,12 @@ app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False  # enable this to see sql queries in the terminal
 db.init_app(app)
+
+
+def load_benchmark_template_from_disk(template_name):
+    file_path = BENCHMARK_TEMPLATES_MAP[template_name]
+    with open(file_path, 'r') as template_file:
+        return json.load(template_file)
 
 
 def is_execution_finished(execution):
@@ -146,26 +153,48 @@ def get_clear_to_go():
     return is_clear
 
 
-@app.route('/api/v1.0/run_benchmark', methods=['post'])
-def run_benchmark():
-    if not request.json:
-        abort(400)
-
-    result_id = None
-    execution_configurations = request.json
-
+def execute_benchmark_if_clear_to_go(execution_configurations):
     if not get_clear_to_go():
         return make_response(jsonify({'wait': WAIT_BEFORE_ASK_TO_RUN_AGAIN}), 200)
 
+    result_id = None
     result = execute_benchmark.delay(copy.deepcopy(execution_configurations))
     result_id = result.id
 
     execution = ExecutionModel(result_id=result_id, json_payload=execution_configurations)
     db.session.add(execution)
     db.session.commit()
-    print(f'inside db: {[e.id for e in db.session.query(ExecutionModel).all()]}')
+    # print(f'inside db: {[e.id for e in db.session.query(ExecutionModel).all()]}')
 
     return make_response(jsonify({'result_id': result_id}), 200)
+
+
+@app.route('/api/v1.0/run_benchmark_from_template', methods=['post'])
+def run_benchmark_from_template():
+    if not request.json:
+        abort(400)
+
+    request_data = request.json
+    template_name = request_data.get('template_name')
+    if not template_name or template_name not in BENCHMARK_TEMPLATES_MAP.keys():
+        abort(make_response(jsonify(message=f'Template Name "{template_name}" is invalid.'), 400))
+
+    template_configurations = load_benchmark_template_from_disk(template_name)
+    template_override = request_data.get('template_override', {})
+    template_configurations.update(template_override)
+    execution_configurations = template_configurations
+
+    return execute_benchmark_if_clear_to_go(execution_configurations)
+
+
+@app.route('/api/v1.0/run_benchmark', methods=['post'])
+def run_benchmark():
+    if not request.json:
+        abort(400)
+
+    execution_configurations = request.json
+
+    return execute_benchmark_if_clear_to_go(execution_configurations)
 
 
 @app.route('/api/v1.0/set_artefacts/<string:result_id>', methods=['post'])
@@ -376,6 +405,16 @@ def filter_finished_results_with_evaluation_without_error(result, evaluation_nam
                 return True
 
     return False
+
+
+@app.route('/create_benchmark_from_template', methods=['get'])
+def create_benchmark_from_template():
+    if request.method == 'GET':
+        templates = list(BENCHMARK_TEMPLATES_MAP.keys())
+        print(templates)
+        return render_template(
+            'new_benchmark/create_benchmark.html', templates=templates
+        )
 
 
 def database_is_empty():

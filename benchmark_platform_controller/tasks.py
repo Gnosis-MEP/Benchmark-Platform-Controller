@@ -109,7 +109,8 @@ def execute_benchmark(self, execution_configurations):
     extra_nodes_configs = execution_configurations.get('extra_nodes', {'jetson': {}})
 
     # only considering jetson for now, to make it simple
-    extra_nodes_configs = extra_nodes_configs.get('jetson', {})
+    if extra_nodes_configs:
+        extra_nodes_configs = extra_nodes_configs.get('jetson', {})
 
     sleep_after_target_startup = target_system_confs.get('sleep_after_target_startup')
     target_system_git_path = target_system_confs.get('git_repository')

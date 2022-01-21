@@ -30,6 +30,7 @@ services:
       - ./ansible-files:/service/ansible-files
       - ./artefacts:/service/artefacts
       - ./scripts:/service/scripts
+      - ./benchmark_templates:/service/benchmark_templates
       - ./configs.json:/service/configs.json
       - /var/run/docker.sock:/var/run/docker.sock
     ports:

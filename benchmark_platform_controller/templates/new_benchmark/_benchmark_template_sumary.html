@@ -1,0 +1,32 @@
+{# using "template" as the variable for holding the specific template configuration dict #}
+{# using "template_name" as the variable for holding the specific template name #}
+{# href="{{ url_for('run_benchmark_from_template') }}" #}
+
+{% set collapse_id = template_name+'-Detail' -%}
+
+{% extends "execution_detail/base_element_summary_table.html" %}
+
+{% block element_summary_title %}{{ template_name }}{% endblock %}
+
+
+{% block element_summary_header_color %}{{ super() }}{% endblock %}
+
+{% block element_table_header %}
+    <th ><p style="text-align: left; padding: 10px;">Template Name</p></th>
+{% endblock %}
+
+{% block extra_element_header_components %}
+    <button class="btn btn-info waves-effect new-bm" value="{{ template_name}}">
+        Create New Benchmark
+    </button>
+{% endblock %}
+
+{% block element_table_body %}
+    <tr>
+        <td>
+            <p style="text-align: left; padding: 10px;">
+                {{ template_name }}
+            </p>
+        </td>
+
+{% endblock %}
