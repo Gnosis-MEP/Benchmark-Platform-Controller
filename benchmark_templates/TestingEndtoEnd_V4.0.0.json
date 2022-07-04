@@ -1,0 +1,170 @@
+{
+    "target_system": {
+        "sleep_after_target_startup": "30"
+    },
+    "benchmark": {
+        "benchmark": {
+            "benchmark-version": "master",
+            "tasks": [
+                {
+                    "module": "benchmark_tools.task_generator.task_add_mocked_stream_publishing",
+                    "args": [],
+                    "kwargs": {
+                        "redis_address": "172.17.0.1",
+                        "redis_port": "6379",
+                        "logging_level": "ERROR",
+                        "max_stream_length": null,
+                        "actions": [
+                            {
+                                "action": "publishToStream",
+                                "stream_key": "PublisherCreated",
+                                "fps": 1,
+                                "max_events": 1,
+                                "max_time": null,
+                                "event_template": {
+                                    "publisher_id": "Publisher1",
+                                    "source": "rtmp://172.17.0.1/vod2/coco2017-val-300x300-60fps.flv",
+                                    "stream_key": "pub-cmd-Publisher1",
+                                    "meta": {
+                                        "color": "True",
+                                        "fps": "60",
+                                        "resolution": "300x300"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "module": "benchmark_tools.task_generator.task_add_subscriber",
+                    "args": [],
+                    "kwargs": {
+                        "redis_address": "172.17.0.1",
+                        "redis_port": "6379",
+                        "output_path": "./outputs",
+                        "logging_level": "ERROR",
+                        "actions": [
+                            {
+                                "action": "exportSubscribeToQuery",
+                                "subscriber_id": "Subscriber1",
+                                "stream_key": "91b0e93c4b24aaa6fb37ce0e5e216c94"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "module": "benchmark_tools.task_generator.task_add_mocked_stream_publishing",
+                    "args": [],
+                    "kwargs": {
+                        "redis_address": "172.17.0.1",
+                        "redis_port": "6379",
+                        "logging_level": "ERROR",
+                        "max_stream_length": null,
+                        "actions": [
+                            {
+                                "action": "publishToStream",
+                                "stream_key": "QueryReceived",
+                                "fps": 1,
+                                "max_events": 1,
+                                "max_time": null,
+                                "event_template": {
+                                    "subscriber_id": "Subscriber1",
+                                    "query": "REGISTER QUERY AnyPersonFromPub1LatencyMin OUTPUT K_GRAPH_JSON CONTENT ObjectDetection MATCH (p:person) FROM Publisher1 WITHIN TUMBLING_COUNT_WINDOW(1) WITH_QOS latency = 'min' RETURN *"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "module": "benchmark_tools.task_generator.task_add_mocked_stream_publishing",
+                    "args": [],
+                    "kwargs": {
+                        "redis_address": "172.17.0.1",
+                        "redis_port": "6379",
+                        "logging_level": "ERROR",
+                        "max_stream_length": null,
+                        "actions": [
+                            {
+                                "action": "task_gen_wait_for",
+                                "sleep_time": 90.0
+                            },
+                            {
+                                "action": "publishToStream",
+                                "stream_key": "QueryDeletionRequested",
+                                "fps": 1,
+                                "max_events": 1,
+                                "max_time": null,
+                                "event_template": {
+                                    "subscriber_id": "Subscriber1",
+                                    "query_name": "AnyPersonFromPub1LatencyMin"
+                                }
+                            },
+                            {
+                                "action": "task_gen_wait_for",
+                                "sleep_time": 10
+                            }
+                        ]
+                    }
+                }
+            ],
+            "evaluations": [
+                {
+                    "module": "benchmark_tools.evaluation.latency_evaluation",
+                    "args": [],
+                    "kwargs": {
+                        "jaeger_api_host": "http://172.17.0.1:16686",
+                        "threshold_functions": {},
+                        "logging_level": "ERROR"
+                    }
+                },
+                {
+                    "module": "benchmark_tools.evaluation.scheduler_load_shedding_evaluation",
+                    "args": [],
+                    "kwargs": {
+                        "jaeger_api_host": "http://172.17.0.1:16686",
+                        "threshold_functions": {},
+                        "logging_level": "ERROR"
+                    }
+                },
+                {
+                    "module": "benchmark_tools.evaluation.throughput_evaluation",
+                    "args": [],
+                    "kwargs": {
+                        "jaeger_api_host": "http://172.17.0.1:16686",
+                        "threshold_functions": {},
+                        "logging_level": "ERROR"
+                    }
+                },
+                {
+                    "module": "benchmark_tools.evaluation.sub_accuracy_evaluation",
+                    "args": [],
+                    "kwargs": {
+                        "subscription_jl": "./outputs/subscription_91b0e93c4b24aaa6fb37ce0e5e216c94.jl",
+                        "dataset_annotations_json": "./datasets/coco2017/annotations/instances_val2017.json",
+                        "dataset_frameindex_json": "./datasets/coco2017/frame_indexes/coco2017-val-300x300-60fps.json",
+                        "class_label": "person",
+                        "threshold_functions": {},
+                        "logging_level": "ERROR"
+                    }
+                },
+                {
+                    "module": "benchmark_tools.evaluation.per_service_speed_evaluation",
+                    "args": [],
+                    "kwargs": {
+                        "jaeger_api_host": "http://172.17.0.1:16686",
+                        "services": "all",
+                        "threshold_functions": {},
+                        "logging_level": "ERROR"
+                    }
+                }
+            ]
+        },
+        "target_system": {},
+        "result_webhook": "file://./outputs/results.json"
+    },
+    "override_services": {},
+    "datasets": [
+        "coco2017-val-300x300-60fps.flv"
+    ],
+    "extra_nodes": null
+}
