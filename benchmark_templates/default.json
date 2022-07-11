@@ -1,10 +1,12 @@
 {
     "target_system": {
-        "sleep_after_target_startup": "30"
+        "sleep_after_target_startup": "30",
+        "git_repository": "gitlab.insight-centre.org/SIT/mps/felipe-phd/mps-node.git",
+        "version": "master"
     },
     "benchmark": {
         "benchmark": {
-            "benchmark-version": "latest",
+            "benchmark-version": "master",
             "tasks": [
                 {
                     "module": "benchmark_tools.task_generator.task_add_mocked_stream_publishing",
